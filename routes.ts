@@ -5,6 +5,12 @@ import schema from './schema.ts';
 
 const router = new Router();
 
+router.get('/', (ctx) => {
+  const { response } = ctx;
+  response.redirect('/graphql');
+  return;
+});
+
 router.get('/graphql', (ctx) => {
   const { request, response } = ctx;
   const playground = renderPlaygroundPage({

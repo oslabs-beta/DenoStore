@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -23,12 +24,50 @@ const RootQuery = new GraphQLObjectType({
   fields: {
     getAllTests: {
       type: new GraphQLList(TestType),
-      resolve() {
+      resolve(_parent: any, _args: any, _context: any, info: any) {
+        // console.log('Context: ', context);
+        console.log('Info: ', info.operation.selectionSet.loc.source.body);
         return tests;
+      },
+    },
+    getOneTest: {
+      type: TestType,
+      args: {
+        id: { type: GraphQLInt },
+      },
+      resolve: (_parent: any, args: any, _context: any, info: any) => {
+        console.log('Info: ', info.operation.selectionSet.loc.source.body);
+
+        return tests.find((el) => el.id === args.id);
       },
     },
   },
 });
 
-const schema = new GraphQLSchema({ query: RootQuery });
+const Mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    createTest: {
+      type: TestType,
+      args: {
+        id: { type: GraphQLInt },
+        message: { type: GraphQLString },
+        text: { type: GraphQLString },
+      },
+      resolve: (_parent: any, args: any, _context: any, info: any) => {
+        console.log('Info: ', info.operation.selectionSet.loc.source.body);
+
+        const test = {
+          id: args.id,
+          message: args.message,
+          text: args.text,
+        };
+        tests.push(test);
+        return test;
+      },
+    },
+  },
+});
+
+const schema = new GraphQLSchema({ query: RootQuery, mutation: Mutation });
 export default schema;
