@@ -7,6 +7,7 @@ import {
   GraphQLList,
 } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
 import { tests } from './dummyData.ts';
+import { redisClient } from './cache.ts';
 
 //defines the data shape of test (its graphQL type)
 const TestType = new GraphQLObjectType({
@@ -25,8 +26,8 @@ const RootQuery = new GraphQLObjectType({
     getAllTests: {
       type: new GraphQLList(TestType),
       resolve(_parent: any, _args: any, _context: any, info: any) {
-        // console.log('Context: ', context);
-        console.log('Info: ', info.operation.selectionSet.loc.source.body);
+        const query: string = info.operation.selectionSet.loc.source.body;
+        redisClient.set(query, JSON.stringify(tests));
         return tests;
       },
     },
@@ -36,14 +37,17 @@ const RootQuery = new GraphQLObjectType({
         id: { type: GraphQLInt },
       },
       resolve: (_parent: any, args: any, _context: any, info: any) => {
-        console.log('Info: ', info.operation.selectionSet.loc.source.body);
-
-        return tests.find((el) => el.id === args.id);
+        // console.log('Info: ', info.operation.selectionSet.loc.source.body);
+        const query: string = info.operation.selectionSet.loc.source.body;
+        const result = tests.find((el) => el.id === args.id);
+        redisClient.set(query, JSON.stringify(result));
+        return result;
       },
     },
   },
 });
 
+//mutation queries including createTest which adds a new test
 const Mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
@@ -54,8 +58,8 @@ const Mutation = new GraphQLObjectType({
         message: { type: GraphQLString },
         text: { type: GraphQLString },
       },
-      resolve: (_parent: any, args: any, _context: any, info: any) => {
-        console.log('Info: ', info.operation.selectionSet.loc.source.body);
+      resolve: (_parent: any, args: any, _context: any, _info: any) => {
+        // console.log('Info: ', info.operation.selectionSet.loc.source.body);
 
         const test = {
           id: args.id,
