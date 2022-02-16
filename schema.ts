@@ -10,68 +10,85 @@ import { tests } from './dummyData.ts';
 import { redisClient } from './cache.ts';
 
 //defines the data shape of test (its graphQL type)
-const TestType = new GraphQLObjectType({
-  name: 'Test',
+const PersonType = new GraphQLObjectType({
+  name: 'Person',
   fields: () => ({
-    id: { type: GraphQLInt },
-    message: { type: GraphQLString },
-    text: { type: GraphQLString },
+    name: { type: GraphQLString },
+    height: { type: GraphQLString },
+    mass: { type: GraphQLString },
+    hair_color: { type: GraphQLString },
+    skin_color: { type: GraphQLString },
+    eye_color: { type: GraphQLString },
+    birth_year: { type: GraphQLString },
+    gender: { type: GraphQLString },
+    created: { type: GraphQLString },
+    edited: { type: GraphQLString },
+    films: { type: GraphQLList(GraphQLString) },
   }),
 });
+
+// const FilmType = new GraphQLObjectType({
+//   name: 'Film',
+//   fields: () => ({
+//     title: { type: GraphQLString },
+//     episode_id: { type: GraphQLString },
+//     opening_crawl: { type: GraphQLString },
+//     director: { type: GraphQLString },
+//     producer: { type: GraphQLString },
+//     release_date: { type: GraphQLString },
+//     created: { type: GraphQLString },
+//     edited: { type: GraphQLString },
+//   }),
+// });
 
 //root query with all queries inside (analogous to methods on object)
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    getAllTests: {
-      type: new GraphQLList(TestType),
-      resolve(_parent: any, _args: any, _context: any, info: any) {
-        const query: string = info.operation.selectionSet.loc.source.body;
-        redisClient.set(query, JSON.stringify(tests));
-        return tests;
+    person: {
+      type: GraphQLList(PersonType),
+      resolve: async (_parent: any, _args: any, _context: any, info: any) => {
+        const results = await fetch('https://swapi.dev/api/people').then(
+          (res) => res.json()
+        );
+        console.log('api call');
+        const query = info.operation.selectionSet.loc.source.body;
+        redisClient.set(query, JSON.stringify(results.results));
+        return results.results;
       },
     },
-    getOneTest: {
-      type: TestType,
+    onePerson: {
+      type: PersonType,
       args: {
         id: { type: GraphQLInt },
       },
-      resolve: (_parent: any, args: any, _context: any, info: any) => {
-        // console.log('Info: ', info.operation.selectionSet.loc.source.body);
-        const query: string = info.operation.selectionSet.loc.source.body;
-        const result = tests.find((el) => el.id === args.id);
-        redisClient.set(query, JSON.stringify(result));
-        return result;
+      resolve: async (_parent: any, args: any, _context: any, info: any) => {
+        const results = await fetch(
+          `https://swapi.dev/api/people/${args.id}`
+        ).then((res) => res.json());
+        console.log('api call');
+
+        const query = info.operation.selectionSet.loc.source.body;
+        redisClient.set(query, JSON.stringify(results));
+
+        return results;
       },
     },
+    // film: {
+    //   type: FilmType,
+    //   args: {
+    //     id: { type: GraphQLInt },
+    //   },
+    //   resolve: async (_parent: any, args: any, _context: any, _info: any) => {
+    //     console.log('here');
+    //     const results = await fetch(
+    //       `https://swapi.dev/api/films/${args.id}`
+    //     ).then((res) => res.json());
+    //     return results;
+    //   },
+    // },
   },
 });
 
-//mutation queries including createTest which adds a new test
-const Mutation = new GraphQLObjectType({
-  name: 'Mutation',
-  fields: {
-    createTest: {
-      type: TestType,
-      args: {
-        id: { type: GraphQLInt },
-        message: { type: GraphQLString },
-        text: { type: GraphQLString },
-      },
-      resolve: (_parent: any, args: any, _context: any, _info: any) => {
-        // console.log('Info: ', info.operation.selectionSet.loc.source.body);
-
-        const test = {
-          id: args.id,
-          message: args.message,
-          text: args.text,
-        };
-        tests.push(test);
-        return test;
-      },
-    },
-  },
-});
-
-const schema = new GraphQLSchema({ query: RootQuery, mutation: Mutation });
+const schema = new GraphQLSchema({ query: RootQuery });
 export default schema;
