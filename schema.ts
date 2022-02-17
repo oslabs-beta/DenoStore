@@ -6,7 +6,7 @@ import {
   GraphQLInt,
   GraphQLList,
 } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-import { tests } from './dummyData.ts';
+// import { tests } from './dummyData.ts';
 import { redisClient } from './cache.ts';
 
 //defines the data shape of test (its graphQL type)
@@ -27,19 +27,19 @@ const PersonType = new GraphQLObjectType({
   }),
 });
 
-// const FilmType = new GraphQLObjectType({
-//   name: 'Film',
-//   fields: () => ({
-//     title: { type: GraphQLString },
-//     episode_id: { type: GraphQLString },
-//     opening_crawl: { type: GraphQLString },
-//     director: { type: GraphQLString },
-//     producer: { type: GraphQLString },
-//     release_date: { type: GraphQLString },
-//     created: { type: GraphQLString },
-//     edited: { type: GraphQLString },
-//   }),
-// });
+const FilmType = new GraphQLObjectType({
+  name: 'Film',
+  fields: () => ({
+    title: { type: GraphQLString },
+    episode_id: { type: GraphQLString },
+    opening_crawl: { type: GraphQLString },
+    director: { type: GraphQLString },
+    producer: { type: GraphQLString },
+    release_date: { type: GraphQLString },
+    created: { type: GraphQLString },
+    edited: { type: GraphQLString },
+  }),
+});
 
 //root query with all queries inside (analogous to methods on object)
 const RootQuery = new GraphQLObjectType({
@@ -48,13 +48,21 @@ const RootQuery = new GraphQLObjectType({
     person: {
       type: GraphQLList(PersonType),
       resolve: async (_parent: any, _args: any, _context: any, info: any) => {
-        const results = await fetch('https://swapi.dev/api/people').then(
-          (res) => res.json()
-        );
-        console.log('api call');
         const query = info.operation.selectionSet.loc.source.body;
-        redisClient.set(query, JSON.stringify(results.results));
-        return results.results;
+        const cache = await exists(query);
+
+        if (cache) {
+          console.log('cached result');
+
+          return cache;
+        } else {
+          const results = await fetch('https://swapi.dev/api/people').then(
+            (res) => res.json()
+          );
+          console.log('api call');
+          redisClient.set(query, JSON.stringify(results.results));
+          return results.results;
+        }
       },
     },
     onePerson: {
@@ -63,32 +71,63 @@ const RootQuery = new GraphQLObjectType({
         id: { type: GraphQLInt },
       },
       resolve: async (_parent: any, args: any, _context: any, info: any) => {
-        const results = await fetch(
-          `https://swapi.dev/api/people/${args.id}`
-        ).then((res) => res.json());
-        console.log('api call');
-
         const query = info.operation.selectionSet.loc.source.body;
-        redisClient.set(query, JSON.stringify(results));
+        const cache = await exists(query);
 
-        return results;
+        if (cache) {
+          console.log('cached result');
+
+          return cache;
+        } else {
+          const results = await fetch(
+            `https://swapi.dev/api/people/${args.id}`
+          ).then((res) => res.json());
+          console.log('api call');
+
+          redisClient.set(query, JSON.stringify(results));
+
+          return results;
+        }
       },
     },
-    // film: {
-    //   type: FilmType,
-    //   args: {
-    //     id: { type: GraphQLInt },
-    //   },
-    //   resolve: async (_parent: any, args: any, _context: any, _info: any) => {
-    //     console.log('here');
-    //     const results = await fetch(
-    //       `https://swapi.dev/api/films/${args.id}`
-    //     ).then((res) => res.json());
-    //     return results;
-    //   },
-    // },
+    film: {
+      type: FilmType,
+      args: {
+        id: { type: GraphQLInt },
+      },
+      resolve: async (_parent: any, args: any, _context: any, info: any) => {
+        const query = info.operation.selectionSet.loc.source.body;
+        const cache = await exists(query);
+
+        if (cache) {
+          console.log('cached result');
+
+          return cache;
+        } else {
+          const results = await fetch(
+            `https://swapi.dev/api/films/${args.id}`
+          ).then((res) => res.json());
+          console.log('api call');
+
+          redisClient.set(query, JSON.stringify(results));
+
+          return results;
+        }
+      },
+    },
   },
 });
+
+const exists = async (query: string) => {
+  const value = await redisClient.get(query);
+  // cache miss
+  if (!value) return;
+  // cache hit
+  else {
+    const results = JSON.parse(value);
+    return results;
+  }
+};
 
 const schema = new GraphQLSchema({ query: RootQuery });
 export default schema;

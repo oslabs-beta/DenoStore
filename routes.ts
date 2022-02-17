@@ -25,7 +25,7 @@ router.get('/graphql', (ctx) => {
 });
 
 //handles posted query and responds
-router.post('/graphql', checkCache, async (ctx) => {
+router.post('/graphql', async (ctx) => {
   const { response, request } = ctx;
   const body = await request.body();
   const { query } = await body.value;
@@ -39,6 +39,9 @@ router.post('/graphql', checkCache, async (ctx) => {
 
 router.get('/delete', (ctx) => {
   redisClient.flushall();
+
+  console.log('Deleted Cache');
+
   ctx.response.status = 200;
   ctx.response.body = 'Cleared Cache';
   return;
