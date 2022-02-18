@@ -30,5 +30,43 @@ const checkCache = async (ctx: any, next: any) => {
     console.log(err);
   }
 };
+/**
+         * denoStore.exists takes in the info arg from built-in graphQL resolver and a callback
+         * checks the cache: if hit => return data; else run the callback
+         * evaluation of the callback results in setting the cache with the query pulled off of info and the data 
+         * from the callback, then also responds by returning the resolved query data
+         * 
+         * exists(info, async () => {
+         * try{
+          const results = await fetch(
+            `https://swapi.dev/api/people/${args.id}`
+          ).then((res) => res.json());
+          return results;
+        }
+          catch (err) {
+            //do something
+          }
+        }) 
 
-export { checkCache, redisClient };
+        */
+
+const dsCache = async ({ info }: { info: any }, callback: any) => {
+  const query = info.operation.selectionSet.loc.source.body;
+  //reassign to function type later and take the query off of "info" for the user
+  const value = await redisClient.get(query);
+  // cache hit: respond with parsed data
+  let results;
+  if (value) {
+    console.log('cached result');
+    results = JSON.parse(value);
+    return results;
+  }
+
+  //cache miss: set cache and respond with results
+  results = await callback();
+  // console.log(results);
+  await redisClient.set(query, JSON.stringify(results));
+  return results;
+};
+
+export { checkCache, redisClient, dsCache };
