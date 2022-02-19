@@ -6,6 +6,7 @@ const redisClient = await connect({
   hostname: 'localhost',
   port: 6379,
 });
+// import { redisClient } from './routes';
 
 //caching middleware here (checks for mutation query, if it exists on cache or not,
 //and responds with query result either way)
@@ -30,25 +31,6 @@ const checkCache = async (ctx: any, next: any) => {
     console.log(err);
   }
 };
-/**
-         * denoStore.exists takes in the info arg from built-in graphQL resolver and a callback
-         * checks the cache: if hit => return data; else run the callback
-         * evaluation of the callback results in setting the cache with the query pulled off of info and the data 
-         * from the callback, then also responds by returning the resolved query data
-         * 
-         * exists(info, async () => {
-         * try{
-          const results = await fetch(
-            `https://swapi.dev/api/people/${args.id}`
-          ).then((res) => res.json());
-          return results;
-        }
-          catch (err) {
-            //do something
-          }
-        }) 
-
-        */
 
 const dsCache = async ({ info }: { info: any }, callback: any) => {
   const query = info.operation.selectionSet.loc.source.body;
@@ -57,15 +39,14 @@ const dsCache = async ({ info }: { info: any }, callback: any) => {
   // cache hit: respond with parsed data
   let results;
   if (value) {
-    console.log('cached result');
+    console.log('returning cached result');
     results = JSON.parse(value);
     return results;
   }
 
   //cache miss: set cache and respond with results
   results = await callback();
-  // console.log(results);
-  await redisClient.set(query, JSON.stringify(results));
+  await redisClient.set(query, JSON.stringify(results)); //this would be setex for expiration
   return results;
 };
 

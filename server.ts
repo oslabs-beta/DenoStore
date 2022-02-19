@@ -1,15 +1,19 @@
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 
-// import { tests } from './dummyData.ts';
-import router from './routes.ts';
+import { dsRouter } from './routes.ts';
+import schema from './schema.ts';
 
 const PORT = 3000;
 
 //set up Oak middleware for server and set server listening
 const app = new Application();
 
-app.use(router.routes());
-app.use(router.allowedMethods());
+const wrapper = dsRouter({
+  schema,
+  usePlayground: true,
+});
+
+app.use(wrapper.routes(), wrapper.allowedMethods());
 
 app.use((ctx) => {
   ctx.response.body = 'hello world';

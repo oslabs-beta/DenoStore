@@ -1,0 +1,12 @@
+Problem: no default time to live in redis, how do we set one?
+how do we get default exp from main router func (where default time is a param) into the dsCache func?
+we have dsCache defined in cache.ts and imported into schema.ts and the schema imported into routes.ts
+how do we get scope accessible with those two imports?
+
+can the user pass redisClient into dsCache func somehow so the time option is accessible in scope yet,
+we still have the function itself returned to be used in the resolvers? Can we export the client from within another function? (probably not)
+
+https://stackoverflow.com/questions/48771651/getting-a-variable-out-of-a-function-with-module-exports-but-without-a-return
+
+have dsCache function return a function, so user passes in redis client on first invocation
+i.e. const cacheFunc = dsCache(<user redis client>) -> returns a functi

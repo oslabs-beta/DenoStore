@@ -6,8 +6,8 @@ import {
   GraphQLInt,
   GraphQLList,
 } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-// import { tests } from './dummyData.ts';
 import { dsCache } from './cache.ts';
+
 
 //defines the data shape of test (its graphQL type)
 const PersonType = new GraphQLObjectType({
@@ -45,6 +45,9 @@ const FilmType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
+    //person(id:2){name} => name, height, all info on type set in cache
+    //if we receive person(id:2) again, but with {height} we could redis.get("person(id:2)") then destructure height off of .data?
+
     person: {
       type: GraphQLList(PersonType),
       resolve: async (_parent, _args, _context, info) => {
