@@ -1,24 +1,19 @@
 import { Router } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { graphql } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-// import schema from './schema.ts';
-import { redisClient } from './cache.ts';
 import { RouterArgs } from './types.ts';
 
+let client: any;
+
 //find a way to pass defaultCacheExpire into our resolver func dsCache?
-export function dsRouter(args: RouterArgs) {
-  const { schema, usePlayground } = args;
+function dsRouter(args: RouterArgs) {
+  const { schema, usePlayground, redisClient } = args;
   const router = new Router();
+  client = redisClient;
 
   //check if usePlayground is passed in truthy and render playground
   if (usePlayground) {
-    //redirects to /graphql
-    router.get('/', (ctx) => {
-      const { response } = ctx;
-      response.redirect('/graphql');
-      return;
-    });
-    //renders pseudo-graphiql using playground gui
+    //renders pseudo-graphiql using playground GUI
     router.get('/graphql', (ctx) => {
       const { request, response } = ctx;
       const playground = renderPlaygroundPage({
@@ -54,3 +49,10 @@ export function dsRouter(args: RouterArgs) {
 
   return router;
 }
+
+function getRedisClient() {
+  // console.log('getRedisClient-->',client);
+  return client;
+}
+
+export { dsRouter, getRedisClient };
