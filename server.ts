@@ -8,9 +8,18 @@ const PORT = 3000;
 //set up Oak middleware for server and set server listening
 const app = new Application();
 
+import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
+
+//instantiate redis connection
+const redisClient = await connect({
+  hostname: 'localhost',
+  port: 6379,
+});
+
 const wrapper = dsRouter({
   schema,
   usePlayground: true,
+  redisClient,
 });
 
 app.use(wrapper.routes(), wrapper.allowedMethods());

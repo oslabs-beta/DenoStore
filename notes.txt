@@ -9,4 +9,12 @@ we still have the function itself returned to be used in the resolvers? Can we e
 https://stackoverflow.com/questions/48771651/getting-a-variable-out-of-a-function-with-module-exports-but-without-a-return
 
 have dsCache function return a function, so user passes in redis client on first invocation
-i.e. const cacheFunc = dsCache(<user redis client>) -> returns a functi
+i.e. const cacheFunc = dsCache(<user redis client>) -> returns a function with the client in scope
+so they can use it in resolvers in schema.ts file
+
+they use the dsCache function in resolvers in the schema so would import it there
+
+const cacheFunc = dsCache(RedisClient);
+// ^^ returns the caching function we've already written, but now has the client in context
+//user would invoke cacheFunc in resolvers
+//doesn't solve passing the redis client into our big main router as the easiest step

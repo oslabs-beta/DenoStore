@@ -6,8 +6,7 @@ import {
   GraphQLInt,
   GraphQLList,
 } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-import { dsCache } from './cache.ts';
-
+import { dsCache, dsClear } from './cache.ts';
 
 //defines the data shape of test (its graphQL type)
 const PersonType = new GraphQLObjectType({
@@ -40,14 +39,38 @@ const FilmType = new GraphQLObjectType({
     edited: { type: GraphQLString },
   }),
 });
+const obj = {
+  id: 1,
+};
+const objType = new GraphQLObjectType({
+  name: 'obj',
+  fields: () => ({
+    id: { type: GraphQLInt },
+  }),
+});
+
+const Mutation = new GraphQLObjectType({
+  name: 'MutationQueryType',
+  fields: {
+    banana: {
+      type: objType,
+      args: {
+        id: { type: GraphQLInt },
+      },
+      resolve: async (_parent, args) => {
+        await dsClear();
+        return obj;
+      },
+    },
+  },
+});
 
 //root query with all queries inside (analogous to methods on object)
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
     //person(id:2){name} => name, height, all info on type set in cache
-    //if we receive person(id:2) again, but with {height} we could redis.get("person(id:2)") then destructure height off of .data?
-
+    //if we receive person(id:2) again, but with {height} we could redis.get("person(id:2)")
     person: {
       type: GraphQLList(PersonType),
       resolve: async (_parent, _args, _context, info) => {
@@ -91,5 +114,5 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
-const schema = new GraphQLSchema({ query: RootQuery });
+const schema = new GraphQLSchema({ query: RootQuery, mutation: Mutation });
 export default schema;
