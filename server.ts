@@ -1,6 +1,6 @@
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 
-import { dsRouter } from './routes.ts';
+import Denostore from './denostore.ts';
 import schema from './schema.ts';
 
 const PORT = 3000;
@@ -16,16 +16,17 @@ const redisClient = await connect({
   port: 6379,
 });
 
-const wrapper = dsRouter({
+const dsInstance = new Denostore({
   schema,
   usePlayground: true,
   redisClient,
 });
 
-app.use(wrapper.routes(), wrapper.allowedMethods());
+app.use(dsInstance.routes(), dsInstance.allowedMethods());
 
 app.use((ctx) => {
-  ctx.response.body = 'hello world';
+  ctx.response.body = '404 Page Not Found';
+  ctx.response.status = 404;
 });
 
 console.log(`Server Running on port ${PORT}`);
