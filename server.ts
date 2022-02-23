@@ -16,13 +16,13 @@ const redisClient = await connect({
   port: 6379,
 });
 
-const dsInstance = new Denostore({
+const denostore = new Denostore({
   schema,
   usePlayground: true,
   redisClient,
 });
 
-app.use(dsInstance.routes(), dsInstance.allowedMethods());
+app.use(denostore.routes(), denostore.allowedMethods());
 
 app.use((ctx) => {
   ctx.response.body = '404 Page Not Found';
