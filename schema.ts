@@ -74,7 +74,6 @@ const RootQuery = new GraphQLObjectType({
     person: {
       type: GraphQLList(PersonType),
       resolve: async (_parent: any, _args: any, context: any, info: any) => {
-        console.log(context);
         return await (context.denostore as Denostore).cache({ info }, async () => {
           const results = await fetch('https://swapi.dev/api/people').then(
             (res) => res.json()
