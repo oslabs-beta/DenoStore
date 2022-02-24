@@ -2,6 +2,7 @@ import { Router } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { graphql } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
 import { RouterArgs } from './types.ts';
+import { queryParser } from './utils.ts';
 
 export default class Denostore {
   #schema: any;
@@ -18,11 +19,12 @@ export default class Denostore {
   }
 
   async cache({ info }: { info: any }, callback: any) {
-    console.log('this', this);
+    // error check here for missing query on info obj
+
     //sees if redisClient is already defined and if not assigns it to the client's passed in Redis
-    const query = info.operation.selectionSet.loc.source.body;
-    //reassign to function type later and take the query off of "info" for the user
-    const value = await this.#redisClient.get(query);
+    const queryName = queryParser(info.operation.selectionSet.loc.source.body);
+    
+    const value = await this.#redisClient.get(queryName);
     // cache hit: respond with parsed data
     let results;
     if (value) {
@@ -30,11 +32,11 @@ export default class Denostore {
       results = JSON.parse(value);
       return results;
     }
-  
+
     //cache miss: set cache and respond with results
-    console.log('cache miss')
+    console.log('cache miss');
     results = await callback();
-    await this.#redisClient.set(query, JSON.stringify(results)); //this would be setex for expiration
+    await this.#redisClient.set(queryName, JSON.stringify(results)); //this would be setex for expiration
     return results;
   }
 
@@ -45,7 +47,7 @@ export default class Denostore {
   }
 
   routes(): any {
-      //check if usePlayground is passed in truthy and render playground
+    //check if usePlayground is passed in truthy and render playground
     if (this.#usePlayground) {
       //renders pseudo-graphiql using playground GUI
       this.#router.get('/graphql', (ctx: any) => {
@@ -66,10 +68,10 @@ export default class Denostore {
       const { query } = await body.value;
       //caching happens inside of resolvers (nested within schema, so graphql func invocation)
       const results = await graphql({
-        schema: this.#schema, 
-        source: query, 
+        schema: this.#schema,
+        source: query,
         contextValue: { denostore: this },
-        });
+      });
       response.status = 200;
       response.body = results;
       return;
@@ -86,12 +88,9 @@ export default class Denostore {
     });
 
     return this.#router.routes();
-
   }
 
   allowedMethods(): any {
     return this.#router.allowedMethods();
   }
-  
 }
-
