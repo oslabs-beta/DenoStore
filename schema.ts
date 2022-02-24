@@ -74,12 +74,15 @@ const RootQuery = new GraphQLObjectType({
     person: {
       type: GraphQLList(PersonType),
       resolve: async (_parent: any, _args: any, context: any, info: any) => {
-        return await (context.denostore as Denostore).cache({ info }, async () => {
-          const results = await fetch('https://swapi.dev/api/people').then(
-            (res) => res.json()
-          );
-          return results.results;
-        });
+        return await (context.denostore as Denostore).cache(
+          { info },
+          async () => {
+            const results = await fetch('https://swapi.dev/api/people').then(
+              (res) => res.json()
+            );
+            return results.results;
+          }
+        );
       },
     },
     onePerson: {
@@ -88,13 +91,16 @@ const RootQuery = new GraphQLObjectType({
         id: { type: GraphQLInt },
       },
       resolve: async (_parent: any, args: any, context: any, info: any) => {
-        return await (context.denostore as Denostore).cache({ info }, async () => {
-          const results = await fetch(
-            `https://swapi.dev/api/people/${args.id}`
-          ).then((res) => res.json());
-          console.log('api call');
-          return results;
-        });
+        return await (context.denostore as Denostore).cache(
+          { info },
+          async () => {
+            const results = await fetch(
+              `https://swapi.dev/api/people/${args.id}`
+            ).then((res) => res.json());
+            console.log('api call');
+            return results;
+          }
+        );
       },
     },
     film: {
@@ -103,12 +109,15 @@ const RootQuery = new GraphQLObjectType({
         id: { type: GraphQLInt },
       },
       resolve: async (_parent: any, args: any, context: any, info: any) => {
-        return await (context.denostore as Denostore).cache({ info }, async () => {
-          const results = await fetch(
-            `https://swapi.dev/api/films/${args.id}`
-          ).then((res) => res.json());
-          return results;
-        });
+        return await (context.denostore as Denostore).cache(
+          { info },
+          async () => {
+            const results = await fetch(
+              `https://swapi.dev/api/films/${args.id}`
+            ).then((res) => res.json());
+            return results;
+          }
+        );
       },
     },
   },

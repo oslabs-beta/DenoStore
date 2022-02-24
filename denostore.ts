@@ -9,8 +9,6 @@ export default class Denostore {
   #redisClient: any;
   #router: any;
 
-  // prevent user from instantiating
-  // #DsCache() {} 
   constructor(args: RouterArgs) {
     const { schema, usePlayground, redisClient } = args;
     this.#usePlayground = usePlayground;
@@ -20,6 +18,7 @@ export default class Denostore {
   }
 
   async cache({ info }: { info: any }, callback: any) {
+    console.log('this', this);
     //sees if redisClient is already defined and if not assigns it to the client's passed in Redis
     const query = info.operation.selectionSet.loc.source.body;
     //reassign to function type later and take the query off of "info" for the user
