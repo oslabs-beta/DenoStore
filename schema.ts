@@ -49,21 +49,21 @@ const objType = new GraphQLObjectType({
   }),
 });
 
-// const Mutation = new GraphQLObjectType({
-//   name: 'MutationQueryType',
-//   fields: {
-//     banana: {
-//       type: objType,
-//       args: {
-//         id: { type: GraphQLInt },
-//       },
-//       resolve: async (_parent: any, args: any) => {
-//         await dsClear();
-//         return obj;
-//       },
-//     },
-//   },
-// });
+const Mutation = new GraphQLObjectType({
+  name: 'MutationQueryType',
+  fields: {
+    banana: {
+      type: objType,
+      args: {
+        id: { type: GraphQLInt },
+      },
+      resolve: async (_parent: any, _args: any, { denostore }: any) => {
+        await denostore.clear();
+        return obj;
+      },
+    },
+  },
+});
 
 //root query with all queries inside (analogous to methods on object)
 const RootQuery = new GraphQLObjectType({
@@ -73,16 +73,18 @@ const RootQuery = new GraphQLObjectType({
     //if we receive person(id:2) again, but with {height} we could redis.get("person(id:2)")
     person: {
       type: GraphQLList(PersonType),
-      resolve: async (_parent: any, _args: any, context: any, info: any) => {
-        return await (context.denostore as Denostore).cache(
-          { info },
-          async () => {
-            const results = await fetch('https://swapi.dev/api/people').then(
-              (res) => res.json()
-            );
-            return results.results;
-          }
-        );
+      resolve: async (
+        _parent: any,
+        _args: any,
+        { denostore }: any,
+        info: any
+      ) => {
+        return await (denostore as Denostore).cache({ info }, async () => {
+          const results = await fetch('https://swapi.dev/api/people').then(
+            (res) => res.json()
+          );
+          return results.results;
+        });
       },
     },
     onePerson: {
@@ -90,17 +92,19 @@ const RootQuery = new GraphQLObjectType({
       args: {
         id: { type: GraphQLInt },
       },
-      resolve: async (_parent: any, args: any, context: any, info: any) => {
-        return await (context.denostore as Denostore).cache(
-          { info },
-          async () => {
-            const results = await fetch(
-              `https://swapi.dev/api/people/${args.id}`
-            ).then((res) => res.json());
-            console.log('api call');
-            return results;
-          }
-        );
+      resolve: async (
+        _parent: any,
+        args: any,
+        { denostore }: any,
+        info: any
+      ) => {
+        return await (denostore as Denostore).cache({ info }, async () => {
+          const results = await fetch(
+            `https://swapi.dev/api/people/${args.id}`
+          ).then((res) => res.json());
+          console.log('api call');
+          return results;
+        });
       },
     },
     film: {
@@ -108,20 +112,22 @@ const RootQuery = new GraphQLObjectType({
       args: {
         id: { type: GraphQLInt },
       },
-      resolve: async (_parent: any, args: any, context: any, info: any) => {
-        return await (context.denostore as Denostore).cache(
-          { info },
-          async () => {
-            const results = await fetch(
-              `https://swapi.dev/api/films/${args.id}`
-            ).then((res) => res.json());
-            return results;
-          }
-        );
+      resolve: async (
+        _parent: any,
+        args: any,
+        { denostore }: any,
+        info: any
+      ) => {
+        return await (denostore as Denostore).cache({ info }, async () => {
+          const results = await fetch(
+            `https://swapi.dev/api/films/${args.id}`
+          ).then((res) => res.json());
+          return results;
+        });
       },
     },
   },
 });
 
-const schema = new GraphQLSchema({ query: RootQuery });
+const schema = new GraphQLSchema({ query: RootQuery, mutation: Mutation });
 export default schema;
