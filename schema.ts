@@ -6,7 +6,7 @@ import {
   GraphQLInt,
   GraphQLList,
 } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-import { dsCache, dsClear } from './cache.ts';
+import Denostore from './denostore.ts';
 
 //defines the data shape of test (its graphQL type)
 const PersonType = new GraphQLObjectType({
@@ -57,8 +57,8 @@ const Mutation = new GraphQLObjectType({
       args: {
         id: { type: GraphQLInt },
       },
-      resolve: async (_parent, args) => {
-        await dsClear();
+      resolve: async (_parent: any, _args: any, { denostore }: any) => {
+        await denostore.clear();
         return obj;
       },
     },
@@ -73,8 +73,13 @@ const RootQuery = new GraphQLObjectType({
     //if we receive person(id:2) again, but with {height} we could redis.get("person(id:2)")
     person: {
       type: GraphQLList(PersonType),
-      resolve: async (_parent, _args, _context, info) => {
-        return await dsCache({ info }, async () => {
+      resolve: async (
+        _parent: any,
+        _args: any,
+        { denostore }: any,
+        info: any
+      ) => {
+        return await (denostore as Denostore).cache({ info }, async () => {
           const results = await fetch('https://swapi.dev/api/people').then(
             (res) => res.json()
           );
@@ -87,8 +92,13 @@ const RootQuery = new GraphQLObjectType({
       args: {
         id: { type: GraphQLInt },
       },
-      resolve: async (_parent, args, _context, info) => {
-        return await dsCache({ info }, async () => {
+      resolve: async (
+        _parent: any,
+        args: any,
+        { denostore }: any,
+        info: any
+      ) => {
+        return await (denostore as Denostore).cache({ info }, async () => {
           const results = await fetch(
             `https://swapi.dev/api/people/${args.id}`
           ).then((res) => res.json());
@@ -102,8 +112,13 @@ const RootQuery = new GraphQLObjectType({
       args: {
         id: { type: GraphQLInt },
       },
-      resolve: async (_parent, args, _context, info) => {
-        return await dsCache({ info }, async () => {
+      resolve: async (
+        _parent: any,
+        args: any,
+        { denostore }: any,
+        info: any
+      ) => {
+        return await (denostore as Denostore).cache({ info }, async () => {
           const results = await fetch(
             `https://swapi.dev/api/films/${args.id}`
           ).then((res) => res.json());
