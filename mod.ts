@@ -1,3 +1,3 @@
-import Denostore from './denostore.ts';
+import Denostore from './src/denostore.ts';
 
 export { Denostore };

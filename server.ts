@@ -1,14 +1,12 @@
-import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
-
-import Denostore from './denostore.ts';
+import { Application, Router } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
+import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
+import Denostore from './src/denostore.ts';
 import schema from './schema.ts';
 
 const PORT = 3000;
 
 //set up Oak middleware for server and set server listening
 const app = new Application();
-
-import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
 
 //instantiate redis connection
 const redisClient = await connect({
@@ -17,8 +15,8 @@ const redisClient = await connect({
 });
 
 const denostore = new Denostore({
+  route: '/graphql2',
   schema,
-  usePlayground: true,
   redisClient,
 });
 
