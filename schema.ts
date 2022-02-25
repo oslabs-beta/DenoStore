@@ -6,7 +6,7 @@ import {
   GraphQLInt,
   GraphQLList,
 } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-import Denostore from './denostore.ts';
+import Denostore from './src/denostore.ts';
 
 //defines the data shape of test (its graphQL type)
 const PersonType = new GraphQLObjectType({
