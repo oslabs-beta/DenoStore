@@ -19,11 +19,12 @@ export default class Denostore {
   }
 
   async cache({ info }: { info: any }, callback: any) {
-    // error check here for missing query on info obj
+    // if info.operation... is null, error handle, console.log(E01, message)
+    // if callback is undefined...
 
     //sees if redisClient is already defined and if not assigns it to the client's passed in Redis
     const queryName = queryParser(info.operation.selectionSet.loc.source.body);
-    
+
     const value = await this.#redisClient.get(queryName);
     // cache hit: respond with parsed data
     let results;
@@ -73,6 +74,7 @@ export default class Denostore {
         contextValue: { denostore: this },
       });
       response.status = 200;
+      if (results.errors) response.status = 500;
       response.body = results;
       return;
     });

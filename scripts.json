@@ -1,6 +1,0 @@
-{
-  "scripts": {
-    "start": "deno run --allow-net server.ts",
-    "dev": "denon run --allow-net server.ts"
-  }
-}
