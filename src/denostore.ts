@@ -12,11 +12,11 @@ import type {
 } from './types.ts';
 
 export default class Denostore {
-  #usePlayground: boolean;
+  #usePlayground?: boolean;
   #redisClient: Redis;
   #schema: GraphQLSchema;
   #router: Router;
-  #route: string;
+  #route?: string;
 
   constructor(args: DenostoreArgs) {
     const {
