@@ -15,10 +15,12 @@ const redisClient = await connect({
 });
 
 const denostore = new Denostore({
-  route: '/graphql2',
+  route: '/graphql',
+  usePlayground: true,
   schema,
   redisClient,
 });
+
 
 app.use(denostore.routes(), denostore.allowedMethods());
 

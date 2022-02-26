@@ -1,15 +1,22 @@
 import { Router } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { graphql } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-import { DenostoreArgs } from './types.ts';
 import { queryParser } from './utils.ts';
 
+import type {
+  Redis,
+  GraphQLSchema,
+  DenostoreArgs,
+  Middleware,
+  Context,
+} from './types.ts';
+
 export default class Denostore {
-  #schema: any;
-  #usePlayground?: boolean;
-  #redisClient: any;
-  #router: any;
-  #route?: string;
+  #usePlayground: boolean;
+  #redisClient: Redis;
+  #schema: GraphQLSchema;
+  #router: Router;
+  #route: string;
 
   constructor(args: DenostoreArgs) {
     const {
@@ -25,7 +32,7 @@ export default class Denostore {
     this.#route = route;
   }
 
-  async cache({ info }: { info: any }, callback: any) {
+  async cache({ info }: { info: any }, callback: { (): Promise<{}> | {} }) {
     // error check here for missing query on info obj
 
     //sees if redisClient is already defined and if not assigns it to the client's passed in Redis
@@ -35,7 +42,7 @@ export default class Denostore {
     // cache hit: respond with parsed data
     let results;
     if (value) {
-      console.log('returning cached result');
+      console.log('Returning cached result');
       results = JSON.parse(value);
       return results;
     }
@@ -43,6 +50,13 @@ export default class Denostore {
     //cache miss: set cache and respond with results
     console.log('cache miss');
     results = await callback();
+    if (results === null || results === undefined) {
+      console.error(
+        '%cError: result of provided callback in Denostore cache function cannot be undefined or null',
+        'font-weight: bold; color: white; background-color: red;'
+      );
+      throw new Error('Error: result of callback cannot be undefined or null');
+    }
     await this.#redisClient.set(queryName, JSON.stringify(results)); //this would be setex for expiration
     return results;
   }
@@ -53,11 +67,11 @@ export default class Denostore {
     console.log('cleared cache');
   }
 
-  routes(): any {
+  routes(): Middleware {
     //check if usePlayground is passed in truthy and render playground
     if (this.#usePlayground) {
-      //renders pseudo-graphiql using playground GUI
-      this.#router.get(this.#route, (ctx: any) => {
+      // renders pseudo-graphiql using playground GUI
+      this.#router.get(this.#route, (ctx: Context): void => {
         const { request, response } = ctx;
         const playground = renderPlaygroundPage({
           endpoint: request.url.origin + this.#route,
@@ -69,8 +83,9 @@ export default class Denostore {
     }
 
     //handles posted query and responds
-    this.#router.post(this.#route, async (ctx: any) => {
+    this.#router.post(this.#route, async (ctx: Context): Promise<void> => {
       const { response, request } = ctx;
+      try {
       const body = await request.body();
       const { query } = await body.value;
       //caching happens inside of resolvers (nested within schema, so graphql func invocation)
@@ -79,13 +94,21 @@ export default class Denostore {
         source: query,
         contextValue: { denostore: this },
       });
-      response.status = 200;
+      response.status = results.errors ? 500 : 200;
       response.body = results;
       return;
+    } catch (err) {
+      console.error(
+        `%cError: error finding query on provided route.
+        \nReceived error: ${err}`,
+        'font-weight: bold; color: white; background-color: red;'
+      );
+      throw err;
+    }
     });
 
     //update/remove later for security
-    this.#router.delete('/delete', (ctx: any) => {
+    this.#router.delete('/delete', (ctx: Context) => {
       this.#redisClient.flushall();
 
       console.log('Deleted Cache');
@@ -94,11 +117,10 @@ export default class Denostore {
       ctx.response.body = 'Cleared Cache';
       return;
     });
-
     return this.#router.routes();
   }
 
-  allowedMethods(): any {
+  allowedMethods(): Middleware {
     return this.#router.allowedMethods();
   }
 }
