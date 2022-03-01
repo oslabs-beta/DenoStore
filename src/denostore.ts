@@ -52,10 +52,12 @@ export default class Denostore {
     results = await callback();
     if (results === null || results === undefined) {
       console.error(
-        '%cError: result of provided callback in Denostore cache function cannot be undefined or null',
+        '%cError: result of callback provided to Denostore cache function cannot be undefined or null',
         'font-weight: bold; color: white; background-color: red;'
       );
-      throw new Error('Error: result of callback cannot be undefined or null');
+      throw new Error(
+        'Error: Middleware error. See server console.'
+      );
     }
     await this.#redisClient.set(queryName, JSON.stringify(results)); //this would be setex for expiration
     return results;
@@ -86,25 +88,27 @@ export default class Denostore {
     this.#router.post(this.#route, async (ctx: Context): Promise<void> => {
       const { response, request } = ctx;
       try {
-      const body = await request.body();
-      const { query } = await body.value;
-      //caching happens inside of resolvers (nested within schema, so graphql func invocation)
-      const results = await graphql({
-        schema: this.#schema,
-        source: query,
-        contextValue: { denostore: this },
-      });
-      response.status = results.errors ? 500 : 200;
-      response.body = results;
-      return;
-    } catch (err) {
-      console.error(
-        `%cError: error finding query on provided route.
+        const body = await request.body();
+        const { query } = await body.value;
+        //caching happens inside of resolvers (nested within schema, so graphql func invocation)
+        const results = await graphql({
+          schema: this.#schema,
+          source: query,
+          contextValue: { denostore: this },
+        });
+        // if errors delete results data
+        results.errors ? delete results.data : null;
+        response.status = results.errors ? 500 : 200;
+        response.body = results;
+        return;
+      } catch (err) {
+        console.error(
+          `%cError: error finding query on provided route.
         \nReceived error: ${err}`,
-        'font-weight: bold; color: white; background-color: red;'
-      );
-      throw err;
-    }
+          'font-weight: bold; color: white; background-color: red;'
+        );
+        throw err;
+      }
     });
 
     //update/remove later for security
