@@ -57,7 +57,13 @@ const Mutation = new GraphQLObjectType({
       args: {
         id: { type: GraphQLInt },
       },
-      resolve: async (_parent: any, _args: any, { denostore }: any) => {
+      resolve: async (
+        _parent: any,
+        _args: any,
+        { denostore }: any,
+        _info: any
+      ) => {
+        // console.log(info.operation.selectionSet.loc.source.body);
         await denostore.clear();
         return obj;
       },

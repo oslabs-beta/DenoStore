@@ -6,6 +6,7 @@ import { queryParser } from './utils.ts';
 import type {
   Redis,
   GraphQLSchema,
+  GraphQLResolveInfo,
   DenostoreArgs,
   Middleware,
   Context,
@@ -16,7 +17,7 @@ export default class Denostore {
   #redisClient: Redis;
   #schema: GraphQLSchema;
   #router: Router;
-  #route?: string;
+  #route: string;
 
   constructor(args: DenostoreArgs) {
     const {
@@ -32,11 +33,17 @@ export default class Denostore {
     this.#route = route;
   }
 
-  async cache({ info }: { info: any }, callback: { (): Promise<{}> | {} }) {
+  async cache(
+    { info }: { info: GraphQLResolveInfo },
+    callback: { (): Promise<{}> | {} }
+  ) {
     // error check here for missing query on info obj
+    const queryString = info.operation.selectionSet.loc
+      ? info.operation.selectionSet.loc.source.body
+      : '';
 
     //sees if redisClient is already defined and if not assigns it to the client's passed in Redis
-    const queryName = queryParser(info.operation.selectionSet.loc.source.body);
+    const queryName = queryParser(queryString);
 
     const value = await this.#redisClient.get(queryName);
     // cache hit: respond with parsed data
@@ -48,17 +55,15 @@ export default class Denostore {
     }
 
     //cache miss: set cache and respond with results
-    console.log('cache miss');
     results = await callback();
     if (results === null || results === undefined) {
       console.error(
         '%cError: result of callback provided to Denostore cache function cannot be undefined or null',
         'font-weight: bold; color: white; background-color: red;'
       );
-      throw new Error(
-        'Error: Middleware error. See server console.'
-      );
+      throw new Error('Error: Query error. See server console.');
     }
+    console.log('cache miss');
     await this.#redisClient.set(queryName, JSON.stringify(results)); //this would be setex for expiration
     return results;
   }
@@ -75,12 +80,21 @@ export default class Denostore {
       // renders pseudo-graphiql using playground GUI
       this.#router.get(this.#route, (ctx: Context): void => {
         const { request, response } = ctx;
-        const playground = renderPlaygroundPage({
-          endpoint: request.url.origin + this.#route,
-        });
-        response.status = 200;
-        response.body = playground;
-        return;
+        try {
+          const playground = renderPlaygroundPage({
+            endpoint: request.url.origin + this.#route,
+          });
+          response.status = 200;
+          response.body = playground;
+          return;
+        } catch (err) {
+          console.log(
+            `%cError: ${err}`,
+            'font-weight: bold; color: white; background-color: red;'
+          );
+          response.status = 500;
+          response.body = 'Problem rendering GraphQL Visual Interface';
+        }
       });
     }
 
