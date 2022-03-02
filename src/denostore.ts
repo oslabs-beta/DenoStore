@@ -35,6 +35,7 @@ export default class Denostore {
 
   async cache(
     { info }: { info: GraphQLResolveInfo },
+    // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
     // error check here for missing query on info obj
