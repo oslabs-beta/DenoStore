@@ -79,17 +79,13 @@ const RootQuery = new GraphQLObjectType({
     //if we receive person(id:2) again, but with {height} we could redis.get("person(id:2)")
     person: {
       type: GraphQLList(PersonType),
-      resolve: async (
-        _parent: any,
-        _args: any,
-        { denostore }: any,
-        info: any
-      ) => {
-        return await (denostore as Denostore).cache({ info }, async () => {
-          const results = await fetch('https://swapi.dev/api/people').then(
+      resolve: async (_parent, _args, context, info) => {
+        const { denostore } = context;
+        return await denostore.cache({ info }, async () => {
+          const { results } = await fetch('https://swapi.dev/api/people').then(
             (res) => res.json()
           );
-          return results.results;
+          return results;
         });
       },
     },
@@ -104,7 +100,7 @@ const RootQuery = new GraphQLObjectType({
         { denostore }: any,
         info: any
       ) => {
-        return await (denostore as Denostore).cache({ info }, async () => {
+        return await denostore.cache({ info }, async () => {
           const results = await fetch(
             `https://swapi.dev/api/people/${args.id}`
           ).then((res) => res.json());
