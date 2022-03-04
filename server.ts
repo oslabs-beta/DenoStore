@@ -22,6 +22,7 @@ const denostore = new Denostore({
   redisClient,
 });
 
+// activate router
 app.use(denostore.routes(), denostore.allowedMethods());
 
 console.log(`Server Running on port ${PORT}`);
