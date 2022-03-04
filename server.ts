@@ -1,6 +1,6 @@
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
-import { Denostore } from './mod.ts';
+import { Denostore } from './mod.ts'; // our caching tool
 import schema from './schema.ts'; // GraphQL schema
 
 const PORT = 3000;
