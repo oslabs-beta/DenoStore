@@ -13,7 +13,7 @@ import type {
 } from './types.ts';
 
 export default class Denostore {
-  #usePlayground?: boolean;
+  #usePlayground: boolean;
   #redisClient: Redis;
   #schema: GraphQLSchema;
   #router: Router;
@@ -43,10 +43,12 @@ export default class Denostore {
       ? info.operation.selectionSet.loc.source.body
       : '';
 
-    //sees if redisClient is already defined and if not assigns it to the client's passed in Redis
+    // parses the query string to determine if mutation or query
+    // checks if the query is already cached
     const queryName = queryParser(queryString);
 
     const value = await this.#redisClient.get(queryName);
+
     // cache hit: respond with parsed data
     let results;
     if (value) {
@@ -70,15 +72,15 @@ export default class Denostore {
   }
 
   async clear(): Promise<void> {
-    //sees if redisClient is already defined and if not assigns it to the client's passed in Redis
+    // clears the cache completely of all data
     await this.#redisClient.flushall();
     console.log('cleared cache');
   }
 
   routes(): Middleware {
-    //check if usePlayground is passed in truthy and render playground
+    // check if usePlayground is passed in truthy and render playground
     if (this.#usePlayground) {
-      // renders pseudo-graphiql using playground GUI
+      // renders pseudo-graphiql using playground IDE
       this.#router.get(this.#route, (ctx: Context): void => {
         const { request, response } = ctx;
         try {
@@ -94,7 +96,7 @@ export default class Denostore {
             'font-weight: bold; color: white; background-color: red;'
           );
           response.status = 500;
-          response.body = 'Problem rendering GraphQL Visual Interface';
+          response.body = 'Problem rendering GraphQL Playground IDE';
         }
       });
     }
@@ -126,9 +128,9 @@ export default class Denostore {
       }
     });
 
-    //update/remove later for security
-    this.#router.delete('/delete', (ctx: Context) => {
-      this.#redisClient.flushall();
+    // update/remove later for security
+    this.#router.delete('/delete', async (ctx: Context): Promise<void> => {
+      await this.#redisClient.flushall();
 
       console.log('Deleted Cache');
 
@@ -136,9 +138,12 @@ export default class Denostore {
       ctx.response.body = 'Cleared Cache';
       return;
     });
+
+    // gives our class the imported router's routes method
     return this.#router.routes();
   }
 
+  // gives our class the imported router's allowedMethods method
   allowedMethods(): Middleware {
     return this.#router.allowedMethods();
   }
