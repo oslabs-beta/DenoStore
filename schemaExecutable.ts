@@ -39,8 +39,8 @@ const typeDefs = gql`
     onePerson(id: ID): PersonType
   }
 `;
-console.log('typedefs-->', typeDefs);
+// console.log('typedefs-->', typeDefs);
 
 const schema = makeExecutableSchema({ typeDefs, resolvers });
-console.log('schema: ', schema);
+// console.log('schema: ', schema);
 export default schema;

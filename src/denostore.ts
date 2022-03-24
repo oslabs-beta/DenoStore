@@ -38,6 +38,15 @@ export default class Denostore {
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
+    // console.log(Boolean(Object.keys(info.fragments).length));
+    // console.log(Object.keys(info.fragments).length);
+    console.log('info-->', info.fieldNodes);
+
+    //check if query is a fragment or not.
+    if (Object.keys(info.fragments).length) {
+      // temporary solution is to direct it straight to callback
+      return await callback();
+    }
     // error check here for missing query on info obj
     const queryString = info.operation.selectionSet.loc
       ? info.operation.selectionSet.loc.source.body

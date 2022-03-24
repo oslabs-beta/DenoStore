@@ -97,6 +97,7 @@ const RootQuery = new GraphQLObjectType({
       type: PersonType,
       args: {
         id: { type: GraphQLInt },
+        test: { type: GraphQLString },
       },
       resolve: async (
         _parent: any,
