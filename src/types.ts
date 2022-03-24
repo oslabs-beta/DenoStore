@@ -1,19 +1,8 @@
-import type { Redis } from 'https://deno.land/x/redis@v0.25.3/mod.ts';
-import type {
-  GraphQLSchema,
-  GraphQLResolveInfo,
-} from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-import type {
-  Middleware,
-  Context,
-} from 'https://deno.land/x/oak@v10.2.0/mod.ts';
+//interface for the shape of each test and types of key/values
 
-export interface DenostoreArgs {
-  schema: GraphQLSchema;
-  redisClient: Redis;
-  route?: string;
+export interface RouterArgs {
+  schema: any;
   usePlayground?: boolean;
   defaultCacheExpire?: number | boolean;
+  redisClient?: any;
 }
-
-export type { Redis, GraphQLSchema, GraphQLResolveInfo, Middleware, Context };
