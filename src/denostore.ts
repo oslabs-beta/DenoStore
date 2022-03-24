@@ -1,7 +1,7 @@
 import { Router } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { graphql } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-import { queryParser } from './utils.ts';
+import { queryParser, queryExtract } from './utils.ts';
 
 import type {
   Redis,
@@ -38,25 +38,26 @@ export default class Denostore {
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
-    // console.log(Boolean(Object.keys(info.fragments).length));
-    // console.log(Object.keys(info.fragments).length);
-    console.log('info-->', info.fieldNodes);
+    // console.log('info-->', info.fieldNodes);
+    const queryExtractName = queryExtract(info.fieldNodes[0]);
+    console.log(queryExtractName);
+    const value = await this.#redisClient.get(queryExtractName);
 
-    //check if query is a fragment or not.
-    if (Object.keys(info.fragments).length) {
-      // temporary solution is to direct it straight to callback
-      return await callback();
-    }
-    // error check here for missing query on info obj
-    const queryString = info.operation.selectionSet.loc
-      ? info.operation.selectionSet.loc.source.body
-      : '';
+    // //check if query is a fragment or not.
+    // if (Object.keys(info.fragments).length) {
+    //   // temporary solution is to direct it straight to callback
+    //   return await callback();
+    // }
+    // // error check here for missing query on info obj
+    // const queryString = info.operation.selectionSet.loc
+    //   ? info.operation.selectionSet.loc.source.body
+    //   : '';
 
-    // parses the query string to determine if mutation or query
-    // checks if the query is already cached
-    const queryName = queryParser(queryString);
+    // // parses the query string to determine if mutation or query
+    // // checks if the query is already cached
+    // const queryName = queryParser(queryString);
 
-    const value = await this.#redisClient.get(queryName);
+    // const value = await this.#redisClient.get(queryName);
 
     // cache hit: respond with parsed data
     let results;
@@ -76,7 +77,8 @@ export default class Denostore {
       throw new Error('Error: Query error. See server console.');
     }
     console.log('cache miss');
-    await this.#redisClient.set(queryName, JSON.stringify(results)); //this would be setex for expiration
+    // await this.#redisClient.set(queryName, JSON.stringify(results)); //this would be setex for expiration
+    await this.#redisClient.set(queryExtractName, JSON.stringify(results)); //this would be setex for expiration
     return results;
   }
 

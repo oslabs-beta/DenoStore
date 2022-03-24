@@ -26,4 +26,18 @@ const queryParser = (queryString: string): string => {
   return queryName;
 };
 
-export { queryParser };
+const queryExtract = (node: any): string => {
+  let queryName = '';
+  queryName += node.name.value;
+  if (node.arguments.length) {
+    queryName += '(';
+    node.arguments.forEach((arg: any, i: number) => {
+      if (i > 0) queryName += ',';
+      queryName += arg.name.value + ':' + arg.value.value;
+    });
+    queryName += ')';
+  }
+  return queryName;
+};
+
+export { queryParser, queryExtract };
