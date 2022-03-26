@@ -1,86 +1,148 @@
 import { Router } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { graphql } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
-import { RouterArgs } from './types.ts';
-import { queryParser } from './utils.ts';
+import { queryExtract } from './utils.ts';
+
+import type {
+  Redis,
+  GraphQLSchema,
+  GraphQLResolveInfo,
+  DenostoreArgs,
+  Middleware,
+  Context,
+} from './types.ts';
 
 export default class Denostore {
-  #schema: any;
-  #usePlayground?: boolean;
-  #redisClient: any;
-  #router: any;
+  #usePlayground: boolean;
+  #redisClient: Redis;
+  #schema: GraphQLSchema;
+  #router: Router;
+  #route: string;
 
-  constructor(args: RouterArgs) {
-    const { schema, usePlayground, redisClient } = args;
+  constructor(args: DenostoreArgs) {
+    const {
+      schema,
+      usePlayground = false,
+      redisClient,
+      route = '/graphql',
+    } = args;
     this.#usePlayground = usePlayground;
     this.#redisClient = redisClient;
     this.#schema = schema;
     this.#router = new Router();
+    this.#route = route;
   }
 
-  async cache({ info }: { info: any }, callback: any) {
-    // if info.operation... is null, error handle, console.log(E01, message)
-    // if callback is undefined...
+  async cache(
+    { info }: { info: GraphQLResolveInfo },
+    // deno-lint-ignore ban-types
+    callback: { (): Promise<{}> | {} }
+  ) {
+    console.log('info-->', info.fieldNodes.length);
+    // const queryExtractName = queryExtract(info.fieldNodes[0]);
+    // console.log('queryExtractName-->', queryExtractName);
+    // const value = await this.#redisClient.get(queryExtractName);
 
-    //sees if redisClient is already defined and if not assigns it to the client's passed in Redis
-    const queryName = queryParser(info.operation.selectionSet.loc.source.body);
+    const queryExtractName = queryExtract(info.fieldNodes[0]);
+    console.log(queryExtractName);
+    const value = await this.#redisClient.get(queryExtractName);
 
-    const value = await this.#redisClient.get(queryName);
+    // // error check here for missing query on info obj
+    // const queryString = info.operation.selectionSet.loc
+    //   ? info.operation.selectionSet.loc.source.body
+    //   : '';
+
+    // // parses the query string to determine if mutation or query
+    // // checks if the query is already cached
+    // const queryName = queryParser(queryString);
+
+    // const value = await this.#redisClient.get(queryName);
+
     // cache hit: respond with parsed data
     let results;
     if (value) {
-      console.log('returning cached result');
+      console.log('Returning cached result');
       results = JSON.parse(value);
       return results;
     }
 
     //cache miss: set cache and respond with results
-    console.log('cache miss');
     results = await callback();
-    await this.#redisClient.set(queryName, JSON.stringify(results)); //this would be setex for expiration
+    if (results === null || results === undefined) {
+      console.error(
+        '%cError: result of callback provided to Denostore cache function cannot be undefined or null',
+        'font-weight: bold; color: white; background-color: red;'
+      );
+      throw new Error('Error: Query error. See server console.');
+    }
+    console.log('cache miss');
+    // await this.#redisClient.set(queryName, JSON.stringify(results)); //this would be setex for expiration
+    // await this.#redisClient.set(queryExtractName, JSON.stringify(results));
+    await this.#redisClient.set(queryExtractName, JSON.stringify(results));
+
     return results;
   }
 
   async clear(): Promise<void> {
-    //sees if redisClient is already defined and if not assigns it to the client's passed in Redis
+    // clears the cache completely of all data
     await this.#redisClient.flushall();
     console.log('cleared cache');
   }
 
-  routes(): any {
-    //check if usePlayground is passed in truthy and render playground
+  routes(): Middleware {
+    // check if usePlayground is passed in truthy and render playground
     if (this.#usePlayground) {
-      //renders pseudo-graphiql using playground GUI
-      this.#router.get('/graphql', (ctx: any) => {
+      // renders pseudo-graphiql using playground IDE
+      this.#router.get(this.#route, (ctx: Context): void => {
         const { request, response } = ctx;
-        const playground = renderPlaygroundPage({
-          endpoint: request.url.origin + '/graphql',
-        });
-        response.status = 200;
-        response.body = playground;
-        return;
+        try {
+          const playground = renderPlaygroundPage({
+            endpoint: request.url.origin + this.#route,
+          });
+          response.status = 200;
+          response.body = playground;
+          return;
+        } catch (err) {
+          console.log(
+            `%cError: ${err}`,
+            'font-weight: bold; color: white; background-color: red;'
+          );
+          response.status = 500;
+          response.body = 'Problem rendering GraphQL Playground IDE';
+        }
       });
     }
 
     //handles posted query and responds
-    this.#router.post('/graphql', async (ctx: any) => {
+    this.#router.post(this.#route, async (ctx: Context): Promise<void> => {
       const { response, request } = ctx;
-      const body = await request.body();
-      const { query } = await body.value;
-      //caching happens inside of resolvers (nested within schema, so graphql func invocation)
-      const results = await graphql({
-        schema: this.#schema,
-        source: query,
-        contextValue: { denostore: this },
-      });
-      response.status = 200;
-      if (results.errors) response.status = 500;
-      response.body = results;
-      return;
+      try {
+        const body = await request.body();
+        const { query } = await body.value;
+        //caching happens inside of resolvers (nested within schema, so graphql func invocation)
+        const results = await graphql({
+          schema: this.#schema,
+          source: query,
+          contextValue: { denostore: this },
+        });
+        // if errors delete results data
+        results.errors ? delete results.data : null;
+        response.status = results.errors ? 500 : 200;
+        response.body = results;
+        return;
+      } catch (err) {
+        console.error(
+          `%cError: error finding query on provided route.
+        \nReceived error: ${err}`,
+          'font-weight: bold; color: white; background-color: red;'
+        );
+        throw err;
+      }
     });
 
-    this.#router.delete('/delete', (ctx: any) => {
-      this.#redisClient.flushall();
+    // update/remove later for security
+    this.#router.delete('/delete', async (ctx: Context): Promise<void> => {
+      await this.#redisClient.flushall();
 
       console.log('Deleted Cache');
 
@@ -89,10 +151,12 @@ export default class Denostore {
       return;
     });
 
+    // gives our class the imported router's routes method
     return this.#router.routes();
   }
 
-  allowedMethods(): any {
+  // gives our class the imported router's allowedMethods method
+  allowedMethods(): Middleware {
     return this.#router.allowedMethods();
   }
 }
