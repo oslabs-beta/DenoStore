@@ -2,6 +2,8 @@ import type { Redis } from 'https://deno.land/x/redis@v0.25.3/mod.ts';
 import type {
   GraphQLSchema,
   GraphQLResolveInfo,
+  FieldNode,
+  ArgumentNode,
 } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
 import type {
   Middleware,
@@ -16,4 +18,16 @@ export interface DenostoreArgs {
   defaultCacheExpire?: number | boolean;
 }
 
-export type { Redis, GraphQLSchema, GraphQLResolveInfo, Middleware, Context };
+export interface QueryObjType {
+  readonly name: string;
+  readonly arguments?: ReadonlyArray<ArgumentNode>;
+}
+
+export type {
+  Redis,
+  GraphQLSchema,
+  GraphQLResolveInfo,
+  Middleware,
+  Context,
+  FieldNode,
+};
