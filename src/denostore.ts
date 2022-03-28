@@ -38,7 +38,7 @@ export default class Denostore {
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
-    console.log('info-->', info.fieldNodes.length);
+    // console.log('info-->', info.fieldNodes[0]);
     // const queryExtractName = queryExtract(info.fieldNodes[0]);
     // console.log('queryExtractName-->', queryExtractName);
     // const value = await this.#redisClient.get(queryExtractName);
@@ -118,12 +118,13 @@ export default class Denostore {
       const { response, request } = ctx;
       try {
         const body = await request.body();
-        const { query } = await body.value;
+        const { query, variables } = await body.value;
         //caching happens inside of resolvers (nested within schema, so graphql func invocation)
         const results = await graphql({
           schema: this.#schema,
           source: query,
           contextValue: { denostore: this },
+          variableValues: variables,
         });
         // if errors delete results data
         results.errors ? delete results.data : null;
