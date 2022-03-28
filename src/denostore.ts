@@ -38,18 +38,18 @@ export default class Denostore {
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
-    // console.log('info-->', info.fieldNodes[0]);
+    // console.log('info-->', info.variableValues);
     // const queryExtractName = queryExtract(info.fieldNodes[0]);
     // console.log('queryExtractName-->', queryExtractName);
     // const value = await this.#redisClient.get(queryExtractName);
 
-    const queryExtractName = queryExtract(info.fieldNodes[0]);
-    console.log(queryExtractName);
+    const queryExtractName = queryExtract(info);
+    // console.log(queryExtractName);
     const value = await this.#redisClient.get(queryExtractName);
 
     // // error check here for missing query on info obj
     // const queryString = info.operation.selectionSet.loc
-    //   ? info.operation.selectionSet.loc.source.body
+    // info.operation.selectionSet.loc.source.body
     //   : '';
 
     // // parses the query string to determine if mutation or query
