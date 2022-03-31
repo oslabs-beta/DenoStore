@@ -18,9 +18,12 @@ export interface DenostoreArgs {
   defaultCacheExpire?: number | boolean;
 }
 
+type Maybe<T> = null | undefined | T;
 export interface QueryObjType {
   readonly name: string;
   readonly arguments?: ReadonlyArray<ArgumentNode>;
+  // deno-lint-ignore no-explicit-any
+  readonly variables?: Maybe<{ [key: string]: any }>;
 }
 
 export type {
