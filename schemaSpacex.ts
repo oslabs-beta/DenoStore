@@ -70,7 +70,7 @@ const RootQuery = new GraphQLObjectType({
         unit: { type: UnitType },
       },
       resolve: async (_parent: any, args: any, context: any, info: any) => {
-        return await context.denostore.cache({ info }, async () => {
+        return await context.denostore.cache({ info: info, ex: 5 }, async () => { // expire after 5 seconds
           const result = await fetch(
             `https://api.spacexdata.com/v3/rockets/${args.id}`
           ).then((res) => res.json());
