@@ -19,6 +19,7 @@ export default class Denostore {
   #schema: GraphQLSchema;
   #router: Router;
   #route: string;
+  #defaultEx: number | null;
 
   constructor(args: DenostoreArgs) {
     const {
@@ -26,12 +27,14 @@ export default class Denostore {
       usePlayground = false,
       redisClient,
       route = '/graphql',
+      defaultEx = null
     } = args;
     this.#usePlayground = usePlayground;
     this.#redisClient = redisClient;
     this.#schema = schema;
     this.#router = new Router();
     this.#route = route;
+    this.#defaultEx = defaultEx;
   }
 
   async cache(
@@ -63,15 +66,18 @@ export default class Denostore {
     }
 
     console.log('cache miss');
-    // if no expiry given, set redis cache with no options
-    if (ex === null) {
-      await this.#redisClient.set(queryExtractName, JSON.stringify(results));
-    } else {
-      // if expiry given, create options object and set redis cache with expire options
-      const opts: SetOpts = {
-        ex: ex,
-      }
+
+    // if expire argument specified, set redis cache with expire options
+    if (ex) {
+      const opts: SetOpts = { ex: ex }
       await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts);
+      // if default expire specified, set redis cache with default expire options
+    } else if (this.#defaultEx) {
+      const opts: SetOpts = { ex: this.#defaultEx }
+      await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts);
+      // if no expire or default expire specified, set cache with no expiration
+    } else {
+      await this.#redisClient.set(queryExtractName, JSON.stringify(results));
     }
 
     return results;
