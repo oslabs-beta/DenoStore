@@ -1,4 +1,4 @@
-import type { Redis } from 'https://deno.land/x/redis@v0.25.3/mod.ts';
+import type { Redis, SetOpts } from 'https://deno.land/x/redis@v0.25.3/mod.ts';
 import type {
   GraphQLSchema,
   GraphQLResolveInfo,
@@ -33,4 +33,5 @@ export type {
   Middleware,
   Context,
   FieldNode,
+  SetOpts,
 };

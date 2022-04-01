@@ -10,6 +10,7 @@ import type {
   DenostoreArgs,
   Middleware,
   Context,
+  SetOpts
 } from './types.ts';
 
 export default class Denostore {
@@ -34,7 +35,7 @@ export default class Denostore {
   }
 
   async cache(
-    { info }: { info: GraphQLResolveInfo },
+    { info, ex }: { info: GraphQLResolveInfo, ex?: number},
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
@@ -62,7 +63,16 @@ export default class Denostore {
     }
 
     console.log('cache miss');
-    await this.#redisClient.set(queryExtractName, JSON.stringify(results));
+    // if no expiry given, set redis cache with no options
+    if (ex === null) {
+      await this.#redisClient.set(queryExtractName, JSON.stringify(results));
+    } else {
+      // if expiry given, create options object and set redis cache with expire options
+      const opts: SetOpts = {
+        ex: ex,
+      }
+      await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts);
+    }
 
     return results;
   }
