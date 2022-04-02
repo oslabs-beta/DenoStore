@@ -19,7 +19,7 @@ export default class Denostore {
   #schema: GraphQLSchema;
   #router: Router;
   #route: string;
-  #defaultEx: number | null;
+  #defaultEx: number | undefined;
 
   constructor(args: DenostoreArgs) {
     const {
@@ -27,7 +27,7 @@ export default class Denostore {
       usePlayground = false,
       redisClient,
       route = '/graphql',
-      defaultEx = null
+      defaultEx = undefined,
     } = args;
     this.#usePlayground = usePlayground;
     this.#redisClient = redisClient;
@@ -38,7 +38,7 @@ export default class Denostore {
   }
 
   async cache(
-    { info, ex }: { info: GraphQLResolveInfo, ex?: number},
+    { info, ex }: { info: GraphQLResolveInfo, ex?: number },
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
@@ -66,19 +66,22 @@ export default class Denostore {
     }
 
     console.log('cache miss');
+    
+    // declare opts variable
+    let opts: SetOpts | undefined;
 
-    // if expire argument specified, set redis cache with expire options
+    // if positive expire argument specified, set expire in options
     if (ex) {
-      const opts: SetOpts = { ex: ex }
-      await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts);
-      // if default expire specified, set redis cache with default expire options
+      if (ex > 0) opts = { ex: ex }
+      // if expire arg not specified look for default expiration
     } else if (this.#defaultEx) {
-      const opts: SetOpts = { ex: this.#defaultEx }
-      await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts);
-      // if no expire or default expire specified, set cache with no expiration
-    } else {
-      await this.#redisClient.set(queryExtractName, JSON.stringify(results));
+      opts = { ex: this.#defaultEx }
     }
+
+    // set cache with options if specified
+    opts ? await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts) 
+      // if no options specified set cache with no expiration
+      : await this.#redisClient.set(queryExtractName, JSON.stringify(results));
 
     return results;
   }
