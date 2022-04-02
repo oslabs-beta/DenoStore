@@ -1,4 +1,4 @@
-import { QueryObjType, FieldNode } from './types.ts';
+import { QueryObjType, GraphQLResolveInfo } from './types.ts';
 
 // const queryParser = (queryString: string): string => {
 //   if (queryString === '') {
@@ -28,10 +28,12 @@ import { QueryObjType, FieldNode } from './types.ts';
 //   return queryName;
 // };
 
-const queryExtract = (node: FieldNode): string => {
+const queryExtract = (info: GraphQLResolveInfo): string => {
+  const node = info.fieldNodes[0];
   const queryObj: QueryObjType = {
     name: node.name.value,
     arguments: node.arguments,
+    variables: info.variableValues,
   };
 
   //find node name value as one key, args on another key
