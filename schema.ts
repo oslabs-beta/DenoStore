@@ -61,11 +61,14 @@ const Mutation = new GraphQLObjectType({
         _parent: any,
         _args: any,
         { denostore }: any,
-        _info: any
+        info: any
       ) => {
-        // console.log(info.operation.selectionSet.loc.source.body);
+        // console.log(info.operation.operation);
         await denostore.clear();
         return obj;
+        // return await denostore.cache({ info }, () => {
+        //   return obj;
+        // });
       },
     },
   },

@@ -10,7 +10,7 @@ import type {
   DenostoreArgs,
   Middleware,
   Context,
-  SetOpts
+  SetOpts,
 } from './types.ts';
 
 export default class Denostore {
@@ -38,10 +38,11 @@ export default class Denostore {
   }
 
   async cache(
-    { info, ex }: { info: GraphQLResolveInfo, ex?: number },
+    { info, ex }: { info: GraphQLResolveInfo; ex?: number },
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
+    console.log(info);
     // extract query name from info object
     const queryExtractName = queryExtract(info);
     // console.log(queryExtractName);
@@ -66,22 +67,27 @@ export default class Denostore {
     }
 
     console.log('cache miss');
-    
+
     // declare opts variable
     let opts: SetOpts | undefined;
 
     // if positive expire argument specified, set expire in options
     if (ex) {
-      if (ex > 0) opts = { ex: ex }
+      if (ex > 0) opts = { ex: ex };
       // if expire arg not specified look for default expiration
     } else if (this.#defaultEx) {
-      opts = { ex: this.#defaultEx }
+      opts = { ex: this.#defaultEx };
     }
 
     // set cache with options if specified
-    opts ? await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts) 
-      // if no options specified set cache with no expiration
-      : await this.#redisClient.set(queryExtractName, JSON.stringify(results));
+    opts
+      ? await this.#redisClient.set(
+          queryExtractName,
+          JSON.stringify(results),
+          opts
+        )
+      : // if no options specified set cache with no expiration
+        await this.#redisClient.set(queryExtractName, JSON.stringify(results));
 
     return results;
   }
