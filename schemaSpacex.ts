@@ -6,7 +6,6 @@ import {
   GraphQLList,
   GraphQLBoolean,
   GraphQLFloat,
-  GraphQLEnumType,
 } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
 
 const RocketType = new GraphQLObjectType({
@@ -18,20 +17,13 @@ const RocketType = new GraphQLObjectType({
     first_flight: { type: GraphQLString },
     country: { type: GraphQLString },
     height: { type: HeightType },
-    diameter(unit:GraphQLString): { type: DiameterType },
+    diameter: { type: DiameterType },
     wikipedia: { type: GraphQLString },
     description: { type: GraphQLString },
     rocket_id: { type: GraphQLString },
     rocket_name: { type: GraphQLString },
     rocket_type: { type: GraphQLString },
   }),
-});
-const UnitType = new GraphQLEnumType({
-  name: 'Unit',
-  values: {
-    meters: { value: 0 },
-    feet: { value: 1 },
-  },
 });
 
 const HeightType = new GraphQLObjectType({
@@ -67,22 +59,18 @@ const RootQuery = new GraphQLObjectType({
       type: RocketType,
       args: {
         id: { type: GraphQLString },
-        unit: { type: UnitType },
       },
       resolve: async (_parent: any, args: any, context: any, info: any) => {
-        return await context.denostore.cache({ info: info, ex: 5 }, async () => { // expire after 5 seconds
-          const result = await fetch(
-            `https://api.spacexdata.com/v3/rockets/${args.id}`
-          ).then((res) => res.json());
-          console.log(args);
-          if (args.unit) {
-            if (args.unit === 'meters')
-              result.diameter.meter = result.diameter.meter * 2;
-            if (args.unit === 'feet')
-              result.diameter.feet = result.diameter.feet * 2;
+        return await context.denostore.cache(
+          { info: info, ex: 5 },
+          async () => {
+            // expire after 5 seconds
+            const result = await fetch(
+              `https://api.spacexdata.com/v3/rockets/${args.id}`
+            ).then((res) => res.json());
+            return result;
           }
-          return result;
-        });
+        );
       },
     },
   },

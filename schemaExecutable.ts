@@ -11,13 +11,28 @@ const resolvers = {
       { denostore }: any,
       info: any
     ) => {
-      return await (denostore as Denostore).cache({ info }, async () => {
-        const results = await fetch(
-          `https://swapi.dev/api/people/${args.id}`
-        ).then((res) => res.json());
-        console.log('api call');
-        return results;
-      });
+      const results = await (denostore as Denostore).cache(
+        { info },
+        async () => {
+          const results = await fetch(
+            `https://swapi.dev/api/people/${args.id}`
+          ).then((res) => res.json());
+          console.log('api call');
+          return results;
+        }
+      );
+      return results;
+    },
+  },
+  PersonType: {
+    mass: (parent: any, { unit }: any) => {
+      if (unit === 'multiply') {
+        return parent.mass * 2;
+      } else if (unit === 'divide') {
+        return parent.mass / 2;
+      } else {
+        return parent.mass;
+      }
     },
   },
 };
@@ -25,7 +40,7 @@ const typeDefs = gql`
   type PersonType {
     name: String
     height: String
-    mass: String
+    mass(unit: String): String
     hair_color: String
     skin_color: String
     eye_color: String
