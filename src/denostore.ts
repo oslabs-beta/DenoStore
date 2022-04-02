@@ -10,6 +10,7 @@ import type {
   DenostoreArgs,
   Middleware,
   Context,
+  SetOpts
 } from './types.ts';
 
 export default class Denostore {
@@ -18,6 +19,7 @@ export default class Denostore {
   #schema: GraphQLSchema;
   #router: Router;
   #route: string;
+  #defaultEx: number | undefined;
 
   constructor(args: DenostoreArgs) {
     const {
@@ -25,38 +27,25 @@ export default class Denostore {
       usePlayground = false,
       redisClient,
       route = '/graphql',
+      defaultEx = undefined,
     } = args;
     this.#usePlayground = usePlayground;
     this.#redisClient = redisClient;
     this.#schema = schema;
     this.#router = new Router();
     this.#route = route;
+    this.#defaultEx = defaultEx;
   }
 
   async cache(
-    { info }: { info: GraphQLResolveInfo },
+    { info, ex }: { info: GraphQLResolveInfo, ex?: number },
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
-    console.log('info-->', info.fieldNodes.length);
-    // const queryExtractName = queryExtract(info.fieldNodes[0]);
-    // console.log('queryExtractName-->', queryExtractName);
-    // const value = await this.#redisClient.get(queryExtractName);
-
-    const queryExtractName = queryExtract(info.fieldNodes[0]);
-    console.log(queryExtractName);
+    // extract query name from info object
+    const queryExtractName = queryExtract(info);
+    // console.log(queryExtractName);
     const value = await this.#redisClient.get(queryExtractName);
-
-    // // error check here for missing query on info obj
-    // const queryString = info.operation.selectionSet.loc
-    //   ? info.operation.selectionSet.loc.source.body
-    //   : '';
-
-    // // parses the query string to determine if mutation or query
-    // // checks if the query is already cached
-    // const queryName = queryParser(queryString);
-
-    // const value = await this.#redisClient.get(queryName);
 
     // cache hit: respond with parsed data
     let results;
@@ -75,10 +64,24 @@ export default class Denostore {
       );
       throw new Error('Error: Query error. See server console.');
     }
+
     console.log('cache miss');
-    // await this.#redisClient.set(queryName, JSON.stringify(results)); //this would be setex for expiration
-    // await this.#redisClient.set(queryExtractName, JSON.stringify(results));
-    await this.#redisClient.set(queryExtractName, JSON.stringify(results));
+    
+    // declare opts variable
+    let opts: SetOpts | undefined;
+
+    // if positive expire argument specified, set expire in options
+    if (ex) {
+      if (ex > 0) opts = { ex: ex }
+      // if expire arg not specified look for default expiration
+    } else if (this.#defaultEx) {
+      opts = { ex: this.#defaultEx }
+    }
+
+    // set cache with options if specified
+    opts ? await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts) 
+      // if no options specified set cache with no expiration
+      : await this.#redisClient.set(queryExtractName, JSON.stringify(results));
 
     return results;
   }
@@ -118,12 +121,13 @@ export default class Denostore {
       const { response, request } = ctx;
       try {
         const body = await request.body();
-        const { query } = await body.value;
+        const { query, variables } = await body.value;
         //caching happens inside of resolvers (nested within schema, so graphql func invocation)
         const results = await graphql({
           schema: this.#schema,
           source: query,
           contextValue: { denostore: this },
+          variableValues: variables,
         });
         // if errors delete results data
         results.errors ? delete results.data : null;

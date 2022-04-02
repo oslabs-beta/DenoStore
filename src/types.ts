@@ -1,4 +1,4 @@
-import type { Redis } from 'https://deno.land/x/redis@v0.25.3/mod.ts';
+import type { Redis, SetOpts } from 'https://deno.land/x/redis@v0.25.3/mod.ts';
 import type {
   GraphQLSchema,
   GraphQLResolveInfo,
@@ -15,12 +15,15 @@ export interface DenostoreArgs {
   redisClient: Redis;
   route?: string;
   usePlayground?: boolean;
-  defaultCacheExpire?: number | boolean;
+  defaultEx?: number | undefined;
 }
 
+type Maybe<T> = null | undefined | T;
 export interface QueryObjType {
   readonly name: string;
   readonly arguments?: ReadonlyArray<ArgumentNode>;
+  // deno-lint-ignore no-explicit-any
+  readonly variables?: Maybe<{ [key: string]: any }>;
 }
 
 export type {
@@ -30,4 +33,5 @@ export type {
   Middleware,
   Context,
   FieldNode,
+  SetOpts,
 };
