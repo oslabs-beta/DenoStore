@@ -20,7 +20,6 @@ export default class Denostore {
   #router: Router;
   #route: string;
   #defaultEx: number | undefined;
-  #opts: SetOpts | undefined;
 
   constructor(args: DenostoreArgs) {
     const {
@@ -36,7 +35,6 @@ export default class Denostore {
     this.#router = new Router();
     this.#route = route;
     this.#defaultEx = defaultEx;
-    this.#opts;
   }
 
   async cache(
@@ -68,17 +66,20 @@ export default class Denostore {
     }
 
     console.log('cache miss');
+    
+    // declare opts variable
+    let opts: SetOpts | undefined;
 
     // if positive expire argument specified, set expire in options
     if (ex) {
-      if (ex > 0) this.#opts = { ex: ex }
+      if (ex > 0) opts = { ex: ex }
       // if expire arg not specified look for default expiration
     } else if (this.#defaultEx) {
-      this.#opts = { ex: this.#defaultEx }
+      opts = { ex: this.#defaultEx }
     }
 
     // set cache with options if specified
-    this.#opts ? await this.#redisClient.set(queryExtractName, JSON.stringify(results), this.#opts) 
+    opts ? await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts) 
       // if no options specified set cache with no expiration
       : await this.#redisClient.set(queryExtractName, JSON.stringify(results));
 
