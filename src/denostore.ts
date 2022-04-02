@@ -42,7 +42,7 @@ export default class Denostore {
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
-    console.log(info);
+    // console.log(info);
     // extract query name from info object
     const queryExtractName = queryExtract(info);
     // console.log(queryExtractName);
@@ -128,6 +128,7 @@ export default class Denostore {
       try {
         const body = await request.body();
         const { query, variables } = await body.value;
+
         //caching happens inside of resolvers (nested within schema, so graphql func invocation)
         const results = await graphql({
           schema: this.#schema,
