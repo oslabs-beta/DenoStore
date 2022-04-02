@@ -19,6 +19,7 @@ export default class Denostore {
   #schema: GraphQLSchema;
   #router: Router;
   #route: string;
+  #defaultEx: number | undefined;
 
   constructor(args: DenostoreArgs) {
     const {
@@ -26,16 +27,18 @@ export default class Denostore {
       usePlayground = false,
       redisClient,
       route = '/graphql',
+      defaultEx = undefined,
     } = args;
     this.#usePlayground = usePlayground;
     this.#redisClient = redisClient;
     this.#schema = schema;
     this.#router = new Router();
     this.#route = route;
+    this.#defaultEx = defaultEx;
   }
 
   async cache(
-    { info, ex }: { info: GraphQLResolveInfo, ex?: number},
+    { info, ex }: { info: GraphQLResolveInfo, ex?: number },
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
@@ -64,16 +67,22 @@ export default class Denostore {
     }
 
     console.log('cache miss');
-    // if no expiry given, set redis cache with no options
-    if (ex === null) {
-      await this.#redisClient.set(queryExtractName, JSON.stringify(results));
-    } else {
-      // if expiry given, create options object and set redis cache with expire options
-      const opts: SetOpts = {
-        ex: ex,
-      }
-      await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts);
+    
+    // declare opts variable
+    let opts: SetOpts | undefined;
+
+    // if positive expire argument specified, set expire in options
+    if (ex) {
+      if (ex > 0) opts = { ex: ex }
+      // if expire arg not specified look for default expiration
+    } else if (this.#defaultEx) {
+      opts = { ex: this.#defaultEx }
     }
+
+    // set cache with options if specified
+    opts ? await this.#redisClient.set(queryExtractName, JSON.stringify(results), opts) 
+      // if no options specified set cache with no expiration
+      : await this.#redisClient.set(queryExtractName, JSON.stringify(results));
 
     return results;
   }

@@ -21,6 +21,7 @@ const denostore = new Denostore({
   usePlayground: true,
   schema,
   redisClient,
+  defaultEx: 10,
 });
 
 app.use(denostore.routes(), denostore.allowedMethods());

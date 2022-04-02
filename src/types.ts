@@ -15,7 +15,7 @@ export interface DenostoreArgs {
   redisClient: Redis;
   route?: string;
   usePlayground?: boolean;
-  defaultCacheExpire?: number | boolean;
+  defaultEx?: number | undefined;
 }
 
 type Maybe<T> = null | undefined | T;
