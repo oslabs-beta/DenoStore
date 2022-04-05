@@ -9,13 +9,26 @@ import type {
   Middleware,
   Context,
 } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
+import type {
+  ITypeDefinitions,
+  IResolvers,
+  ITypedef,
+} from 'https://deno.land/x/graphql_tools@0.0.2/utils/interfaces.ts';
 
 export interface DenostoreArgs {
-  schema: GraphQLSchema;
+  schema: GraphQLSchema | ExecutableSchemaArgs;
   redisClient: Redis;
   route?: string;
   usePlayground?: boolean;
   defaultEx?: number | undefined;
+}
+
+type ITypedefDS = (() => Array<ITypedefDS>) | string;
+
+export interface ExecutableSchemaArgs<TContext = any> {
+  typeDefs: ITypeDefinitions;
+  // typeDefs: ITypedefDS | Array<ITypedefDS>;
+  resolvers?: IResolvers<any, TContext> | Array<IResolvers<any, TContext>>;
 }
 
 type Maybe<T> = null | undefined | T;

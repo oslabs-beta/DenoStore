@@ -3,7 +3,7 @@ import { makeExecutableSchema } from 'https://deno.land/x/graphql_tools@0.0.2/mo
 import { gql } from 'https://deno.land/x/graphql_tag@0.0.1/mod.ts';
 import Denostore from './src/denostore.ts';
 
-const resolvers = {
+export const resolvers = {
   Query: {
     onePerson: async (
       _parent: any,
@@ -36,7 +36,7 @@ const resolvers = {
     },
   },
 };
-const typeDefs = gql`
+export const typeDefs = gql`
   type PersonType {
     name: String
     height: String
@@ -56,6 +56,5 @@ const typeDefs = gql`
 `;
 // console.log('typedefs-->', typeDefs);
 
-const schema = makeExecutableSchema({ typeDefs, resolvers });
+export const schema = makeExecutableSchema({ typeDefs, resolvers });
 // console.log('schema: ', schema);
-export default schema;
