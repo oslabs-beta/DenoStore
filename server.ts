@@ -22,6 +22,7 @@ const denostore = new Denostore({
   usePlayground: true,
   schema,
   // schema: { typeDefs, resolvers },
+  // schema: { typeDefs: schema },
   // schema: { typeDefs: resolvers, resolvers: typeDefs },
   redisClient,
   defaultEx: 10,
