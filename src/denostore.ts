@@ -41,15 +41,16 @@ export default class Denostore {
   }
 
   setSchemaProperty(schema: GraphQLSchema | ExecutableSchemaArgs) {
-    // console.log('typeDefs-->', 'typeDefs' in schema);
-    // console.log('resolver-->', 'resolvers' in schema);
-
+    // takes in schema as an argument
+    // checks if typedefs or resolver property is in schema
     if ('typeDefs' in schema || 'resolvers' in schema) {
+      // set class property #schema with the schema that comes out of makeExecutableSchema function
       this.#schema = makeExecutableSchema({
         typeDefs: schema.typeDefs,
         resolvers: schema.resolvers,
       });
     } else {
+      // set class property #schema with the pass passed in
       this.#schema = schema;
     }
   }
