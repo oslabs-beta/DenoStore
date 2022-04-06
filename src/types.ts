@@ -4,18 +4,36 @@ import type {
   GraphQLResolveInfo,
   FieldNode,
   ArgumentNode,
+  DocumentNode,
+  DefinitionNode,
+  Source,
 } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
 import type {
   Middleware,
   Context,
 } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
+import type { IResolvers } from 'https://deno.land/x/graphql_tools@0.0.2/utils/interfaces.ts';
 
 export interface DenostoreArgs {
-  schema: GraphQLSchema;
+  schema: GraphQLSchema | ExecutableSchemaArgs;
   redisClient: Redis;
   route?: string;
   usePlayground?: boolean;
   defaultEx?: number | undefined;
+}
+
+type ITypedefDS =
+  | string
+  | Source
+  | DocumentNode
+  | GraphQLSchema
+  | DefinitionNode
+  | Array<ITypedefDS>
+  | (() => ITypedefDS);
+
+export interface ExecutableSchemaArgs<TContext = any> {
+  typeDefs: ITypedefDS; // type definitions used to make schema
+  resolvers?: IResolvers<any, TContext> | Array<IResolvers<any, TContext>>; // resolvers for the type definitions
 }
 
 type Maybe<T> = null | undefined | T;

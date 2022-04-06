@@ -1,6 +1,7 @@
 import { Router } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { graphql } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
+import { makeExecutableSchema } from 'https://deno.land/x/graphql_tools@0.0.2/mod.ts';
 import { queryExtract } from './utils.ts';
 
 import type {
@@ -11,12 +12,13 @@ import type {
   Middleware,
   Context,
   SetOpts,
+  ExecutableSchemaArgs,
 } from './types.ts';
 
 export default class Denostore {
   #usePlayground: boolean;
   #redisClient: Redis;
-  #schema: GraphQLSchema;
+  #schema!: GraphQLSchema;
   #router: Router;
   #route: string;
   #defaultEx: number | undefined;
@@ -29,12 +31,28 @@ export default class Denostore {
       route = '/graphql',
       defaultEx = undefined,
     } = args;
+
+    this.setSchemaProperty(schema);
     this.#usePlayground = usePlayground;
     this.#redisClient = redisClient;
-    this.#schema = schema;
     this.#router = new Router();
     this.#route = route;
     this.#defaultEx = defaultEx;
+  }
+
+  setSchemaProperty(schema: GraphQLSchema | ExecutableSchemaArgs): void {
+    // takes in schema as an argument
+    // checks if typedefs or resolver property is in schema
+    if ('typeDefs' in schema || 'resolvers' in schema) {
+      // set class property #schema with the schema that comes out of makeExecutableSchema function
+      this.#schema = makeExecutableSchema({
+        typeDefs: schema.typeDefs,
+        resolvers: schema.resolvers,
+      });
+    } else {
+      // set class property #schema with the pass passed in
+      this.#schema = schema;
+    }
   }
 
   async cache(
@@ -42,10 +60,9 @@ export default class Denostore {
     // deno-lint-ignore ban-types
     callback: { (): Promise<{}> | {} }
   ) {
-    // console.log(info);
     // extract query name from info object
     const queryExtractName = queryExtract(info);
-    // console.log(queryExtractName);
+    // check cache if query name exists
     const value = await this.#redisClient.get(queryExtractName);
 
     // cache hit: respond with parsed data
