@@ -40,7 +40,7 @@ export default class Denostore {
     this.#defaultEx = defaultEx;
   }
 
-  setSchemaProperty(schema: GraphQLSchema | ExecutableSchemaArgs) {
+  setSchemaProperty(schema: GraphQLSchema | ExecutableSchemaArgs): void {
     // takes in schema as an argument
     // checks if typedefs or resolver property is in schema
     if ('typeDefs' in schema || 'resolvers' in schema) {
