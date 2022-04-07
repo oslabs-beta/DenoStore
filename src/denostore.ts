@@ -63,7 +63,7 @@ export default class Denostore {
       // set class property #schema with the schema that comes out of makeExecutableSchema function
       this.#schema = makeExecutableSchema({
         typeDefs: schema.typeDefs,
-        resolvers: schema.resolvers,
+        resolvers: schema.resolvers || {},
       });
     } else {
       // set class property #schema with the pass passed in
