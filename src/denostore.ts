@@ -46,7 +46,7 @@ export default class Denostore {
     if (redisClient) {
       this.#redisClient = redisClient;
     } else {
-      await connect({
+      this.#redisClient = await connect({
         hostname: 'localhost',
         port: redisPort,
       });

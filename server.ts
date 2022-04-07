@@ -10,17 +10,11 @@ const PORT = 3000;
 //set up Oak middleware for server and set server listening
 const app = new Application();
 
-//instantiate redis connection
-const redisClient = await connect({
-  hostname: 'localhost',
-  port: 6379,
-});
-
 const denostore = new Denostore({
   route: '/graphql',
   usePlayground: true,
   schema,
-  redisClient,
+  redisPort: 6379,
   defaultEx: 10,
 });
 
