@@ -1,6 +1,7 @@
 import { Router } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { graphql } from 'https://deno.land/x/graphql_deno@v15.0.0/mod.ts';
+import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
 import { queryExtract } from './utils.ts';
 
 import type {
@@ -15,7 +16,7 @@ import type {
 
 export default class Denostore {
   #usePlayground: boolean;
-  #redisClient: Redis;
+  #redisClient!: Redis;
   #schema: GraphQLSchema;
   #router: Router;
   #route: string;
@@ -26,15 +27,30 @@ export default class Denostore {
       schema,
       usePlayground = false,
       redisClient,
+      redisPort,
       route = '/graphql',
-      defaultEx = undefined,
+      defaultEx,
     } = args;
     this.#usePlayground = usePlayground;
-    this.#redisClient = redisClient;
+    this.setRedisClientProperty(redisClient, redisPort);
     this.#schema = schema;
     this.#router = new Router();
     this.#route = route;
     this.#defaultEx = defaultEx;
+  }
+
+  async setRedisClientProperty(
+    redisClient: Redis | undefined,
+    redisPort: number | undefined
+  ): Promise<void> {
+    if (redisClient) {
+      this.#redisClient = redisClient;
+    } else {
+      await connect({
+        hostname: 'localhost',
+        port: redisPort,
+      });
+    }
   }
 
   async cache(
@@ -80,14 +96,16 @@ export default class Denostore {
     }
 
     // set cache with options if specified
-    opts
-      ? await this.#redisClient.set(
-          queryExtractName,
-          JSON.stringify(results),
-          opts
-        )
-      : // if no options specified set cache with no expiration
-        await this.#redisClient.set(queryExtractName, JSON.stringify(results));
+    if (opts) {
+      await this.#redisClient.set(
+        queryExtractName,
+        JSON.stringify(results),
+        opts
+      );
+      // if negative expire argument specified or if no options specified set cache with no expiration
+    } else {
+      await this.#redisClient.set(queryExtractName, JSON.stringify(results));
+    }
 
     return results;
   }

@@ -12,7 +12,8 @@ import type {
 
 export interface DenostoreArgs {
   schema: GraphQLSchema;
-  redisClient: Redis;
+  redisClient?: Redis;
+  redisPort?: number;
   route?: string;
   usePlayground?: boolean;
   defaultEx?: number | undefined;
