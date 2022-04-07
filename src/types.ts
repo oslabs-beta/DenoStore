@@ -16,7 +16,8 @@ import type { IResolvers } from 'https://deno.land/x/graphql_tools@0.0.2/utils/i
 
 export interface DenostoreArgs {
   schema: GraphQLSchema | ExecutableSchemaArgs;
-  redisClient: Redis;
+  redisClient?: Redis;
+  redisPort?: number;
   route?: string;
   usePlayground?: boolean;
   defaultEx?: number | undefined;
