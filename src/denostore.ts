@@ -162,8 +162,8 @@ export default class Denostore {
     this.#router.post(this.#route, async (ctx: Context): Promise<void> => {
       const { response, request } = ctx;
       try {
-        const body = request.body();
-        const { query, variables } = await body.value;
+        const { query, variables } = await request.body().value;
+        console.log(query, variables);
 
         //caching happens inside of resolvers (nested within schema, so graphql func invocation)
         const results = await graphql({
