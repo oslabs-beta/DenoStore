@@ -8,12 +8,16 @@ import { queryExtract } from './utils.ts';
 import type {
   Redis,
   GraphQLSchema,
-  GraphQLResolveInfo,
   DenostoreArgs,
   Middleware,
   Context,
-  SetOpts,
-  ExecutableSchemaArgs,
+  defaultExArg,
+  redisClientArg,
+  redisPortArg,
+  userSchemaArg,
+  cacheArgs,
+  cacheCallbackArg,
+  optsVariable,
 } from './types.ts';
 
 export default class Denostore {
@@ -22,7 +26,7 @@ export default class Denostore {
   #schema!: GraphQLSchema;
   #router: Router;
   #route: string;
-  #defaultEx: number | undefined;
+  #defaultEx: defaultExArg;
 
   constructor(args: DenostoreArgs) {
     const {
@@ -43,8 +47,8 @@ export default class Denostore {
   }
 
   async setRedisClientProperty(
-    redisClient: Redis | undefined,
-    redisPort: number | undefined
+    redisClient: redisClientArg,
+    redisPort: redisPortArg
   ): Promise<void> {
     if (redisClient) {
       this.#redisClient = redisClient;
@@ -56,7 +60,7 @@ export default class Denostore {
     }
   }
 
-  setSchemaProperty(schema: GraphQLSchema | ExecutableSchemaArgs): void {
+  setSchemaProperty(schema: userSchemaArg): void {
     // takes in schema as an argument
     // checks if typedefs or resolver property is in schema
     if ('typeDefs' in schema || 'resolvers' in schema) {
@@ -71,11 +75,7 @@ export default class Denostore {
     }
   }
 
-  async cache(
-    { info, ex }: { info: GraphQLResolveInfo; ex?: number },
-    // deno-lint-ignore ban-types
-    callback: { (): Promise<{}> | {} }
-  ) {
+  async cache({ info, ex }: cacheArgs, callback: cacheCallbackArg) {
     // extract query name from info object
     const queryExtractName = queryExtract(info);
     // check cache if query name exists
@@ -102,7 +102,7 @@ export default class Denostore {
     console.log('cache miss');
 
     // declare opts variable
-    let opts: SetOpts | undefined;
+    let opts: optsVariable;
 
     // if positive expire argument specified, set expire in options
     if (ex) {
@@ -153,6 +153,7 @@ export default class Denostore {
           );
           response.status = 500;
           response.body = 'Problem rendering GraphQL Playground IDE';
+          throw err;
         }
       });
     }
@@ -161,8 +162,8 @@ export default class Denostore {
     this.#router.post(this.#route, async (ctx: Context): Promise<void> => {
       const { response, request } = ctx;
       try {
-        const body = await request.body();
-        const { query, variables } = await body.value;
+        const { query, variables } = await request.body().value;
+        console.log(query, variables);
 
         //caching happens inside of resolvers (nested within schema, so graphql func invocation)
         const results = await graphql({

@@ -15,7 +15,7 @@ import type {
 import type { IResolvers } from 'https://deno.land/x/graphql_tools@0.0.2/utils/interfaces.ts';
 
 export interface DenostoreArgs {
-  schema: GraphQLSchema | ExecutableSchemaArgs;
+  schema: userSchemaArg;
   redisClient?: Redis;
   redisPort?: number;
   route?: string;
@@ -23,7 +23,24 @@ export interface DenostoreArgs {
   defaultEx?: number | undefined;
 }
 
-type ITypedefDS =
+export type defaultExArg = number | undefined;
+
+export type redisClientArg = Redis | undefined;
+
+export type redisPortArg = number | undefined;
+
+export type userSchemaArg = GraphQLSchema | ExecutableSchemaArgs;
+
+export type cacheCallbackArg = { (): Promise<{}> | {} };
+
+export type optsVariable = SetOpts | undefined;
+
+export interface cacheArgs {
+  info: GraphQLResolveInfo;
+  ex?: number;
+}
+
+export type ITypedefDS =
   | string
   | Source
   | DocumentNode
@@ -37,11 +54,10 @@ export interface ExecutableSchemaArgs<TContext = any> {
   resolvers?: IResolvers<any, TContext> | Array<IResolvers<any, TContext>>; // resolvers for the type definitions
 }
 
-type Maybe<T> = null | undefined | T;
+export type Maybe<T> = null | undefined | T;
 export interface QueryObjType {
   readonly name: string;
   readonly arguments?: ReadonlyArray<ArgumentNode>;
-  // deno-lint-ignore no-explicit-any
   readonly variables?: Maybe<{ [key: string]: any }>;
 }
 

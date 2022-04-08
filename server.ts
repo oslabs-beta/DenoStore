@@ -1,5 +1,5 @@
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
-import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
+// import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
 import Denostore from './src/denostore.ts';
 // import schema from './schema.ts';
 import { typeDefs, resolvers } from './schemaExecutable.ts';
