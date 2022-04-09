@@ -38,15 +38,15 @@ export default class Denostore {
       defaultEx,
     } = args;
 
-    this.setSchemaProperty(schema);
-    this.setRedisClientProperty(redisClient, redisPort);
+    this.#setSchemaProperty(schema);
+    this.#setRedisClientProperty(redisClient, redisPort);
     this.#usePlayground = usePlayground;
     this.#router = new Router();
     this.#route = route;
     this.#defaultEx = defaultEx;
   }
 
-  async setRedisClientProperty(
+  async #setRedisClientProperty(
     redisClient: redisClientArg,
     redisPort: redisPortArg
   ): Promise<void> {
@@ -60,17 +60,13 @@ export default class Denostore {
     }
   }
 
-  setSchemaProperty(schema: userSchemaArg): void {
-    // takes in schema as an argument
-    // checks if typedefs or resolver property is in schema
+  #setSchemaProperty(schema: userSchemaArg): void {
     if ('typeDefs' in schema || 'resolvers' in schema) {
-      // set class property #schema with the schema that comes out of makeExecutableSchema function
       this.#schema = makeExecutableSchema({
         typeDefs: schema.typeDefs,
         resolvers: schema.resolvers || {},
       });
     } else {
-      // set class property #schema with the pass passed in
       this.#schema = schema;
     }
   }
