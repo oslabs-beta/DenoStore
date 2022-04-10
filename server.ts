@@ -8,7 +8,6 @@ import { typeDefs, resolvers } from './schemaExecutable.ts';
 
 const PORT = 3000;
 
-//set up Oak middleware for server and set server listening
 const app = new Application();
 
 const denostore = new Denostore({
@@ -16,7 +15,7 @@ const denostore = new Denostore({
   usePlayground: true,
   schema: { typeDefs, resolvers },
   redisPort: 6379,
-  defaultEx: 10,
+  // defaultEx: 10,
 });
 
 app.use(denostore.routes(), denostore.allowedMethods());

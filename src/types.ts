@@ -36,7 +36,14 @@ export type cacheCallbackArg = { (): Promise<{}> | {} };
 export type optsVariable = SetOpts | undefined;
 
 export interface cacheArgs {
+  /**
+   ** resolver info object must be passed to cache function for access to query
+   */
   info: GraphQLResolveInfo;
+  /**
+   ** expire time in seconds
+   ** use -1 to specify no expiration
+   */
   ex?: number;
 }
 
@@ -55,7 +62,7 @@ export interface ExecutableSchemaArgs<TContext = any> {
 }
 
 export type Maybe<T> = null | undefined | T;
-export interface QueryObjType {
+export interface CacheKeyObj {
   readonly name: string;
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly variables?: Maybe<{ [key: string]: any }>;
