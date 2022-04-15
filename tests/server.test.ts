@@ -2,9 +2,11 @@ import {
   assertEquals,
   assertNotEquals,
 } from 'https://deno.land/std@0.134.0/testing/asserts.ts';
-// import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
+import { superoak } from 'https://deno.land/x/superoak@4.7.0/mod.ts';
+import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { typeDefs } from './typeDefs.ts';
+import { resolvers } from './resolver.ts';
 import { Denostore } from '../mod.ts';
 
 /**
@@ -42,26 +44,34 @@ import { Denostore } from '../mod.ts';
 //   });
 //   redisClient.quit();
 // });
-Deno.test('Denostore, redisClient works with port number', async (t) => {
-  const app = new Application();
 
-  const denostore = new Denostore({
-    usePlayground: false,
-    schema: { typeDefs },
-    redisPort: 6379,
+Deno.test('Denostore started', async (t) => {
+  const redisClient = await connect({
+    hostname: 'localhost',
+    port: 6379,
   });
-  app.use(denostore.routes(), denostore.allowedMethods());
-  await app.listen({ port: 3000 });
+  const denostore = new Denostore({
+    route: '/graphql',
+    usePlayground: false,
+    schema: { typeDefs, resolvers },
+    redisClient,
+  });
 
-  // await t.step('key/value saved to cache successfully', async () => {
-  //   await redisClient.set('key', 'value');
-  //   const test = await redisClient.get('key');
-  //   assertEquals('value', test);
-  // });
-  // await t.step('clear cache successfully', async () => {
-  //   await redisClient.flushdb();
-  //   const test = await redisClient.get('key');
-  //   assertNotEquals('value', test);
-  // });
-  // redisClient.quit();
+  const app = new Application();
+  app.use(denostore.routes(), denostore.allowedMethods());
+  await t.step('accept query and respond with correct query', async () => {
+    const testQuery =
+      '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
+    const request = await superoak(app, true);
+    await request
+      .post('/graphql')
+      .type('json')
+      .send({ query: testQuery })
+      .expect(
+        '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
+      );
+  });
+  redisClient.flushall();
+  redisClient.close();
+  // console.log(Deno.resources());
 });

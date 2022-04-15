@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 export const resolvers = {
   Query: {
     rockets: async (_p: any, _a: any, { denostore }: any, info: any) => {
