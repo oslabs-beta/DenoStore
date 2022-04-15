@@ -163,7 +163,7 @@ export default class Denostore {
       const { response, request } = ctx;
       try {
         const { query, variables } = await request.body().value;
-        console.log(query, variables);
+        // console.log(query, variables);
 
         //caching happens inside of resolvers (nested within schema, so graphql func invocation)
         const results = await graphql({
