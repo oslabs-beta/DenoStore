@@ -19,31 +19,6 @@ import { Denostore } from '../mod.ts';
  mock schemas
  mock queries
  */
-// Compact form: name and function
-// Deno.test('hello world #1', () => {
-//   const x = 1 + 2;
-//   assertEquals(x, 3);
-// });
-
-//test Redis connection and caching
-// Deno.test('redisClient', async (t) => {
-//   const redisClient = await connect({
-//     hostname: 'localhost',
-//     port: 6379,
-//   });
-
-//   await t.step('key/value saved to cache successfully', async () => {
-//     await redisClient.set('key', 'value');
-//     const test = await redisClient.get('key');
-//     assertEquals('value', test);
-//   });
-//   await t.step('clear cache successfully', async () => {
-//     await redisClient.flushdb();
-//     const test = await redisClient.get('key');
-//     assertNotEquals('value', test);
-//   });
-//   redisClient.quit();
-// });
 
 Deno.test('Denostore started', async (t) => {
   const redisClient = await connect({
@@ -59,10 +34,13 @@ Deno.test('Denostore started', async (t) => {
 
   const app = new Application();
   app.use(denostore.routes(), denostore.allowedMethods());
+
   await t.step('accept query and respond with correct query', async () => {
     const testQuery =
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
+
     const request = await superoak(app, true);
+    // const start = new Date().getMilliseconds();
     await request
       .post('/graphql')
       .type('json')
@@ -70,8 +48,11 @@ Deno.test('Denostore started', async (t) => {
       .expect(
         '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
       );
+
+    // console.log(new Date().getMilliseconds() - start);
   });
-  redisClient.flushall();
-  redisClient.close();
+  await redisClient.flushdb();
+  await redisClient.close();
+
   // console.log(Deno.resources());
 });
