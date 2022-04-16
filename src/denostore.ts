@@ -71,13 +71,13 @@ export default class Denostore {
     }
   }
 
-  /** 
+  /**
    ** Caching method to be invoked in the field resolver of queries user wants cached
    ** Creates cache key by accessing resolver 'info' AST for query information
    ** Accepts optional expire time in seconds argument
    ** Retrieves cached value using created cache key
    ** If cache key does not exist for a query, invokes provided callback and sets cache with results
-  */
+   */
   async cache({ info, ex }: cacheArgs, callback: cacheCallbackArg) {
     const cacheKey = buildCacheKey(info);
     const cacheValue = await this.#redisClient.get(cacheKey);
@@ -113,11 +113,7 @@ export default class Denostore {
 
     // set results in cache with options if specified
     if (opts) {
-      await this.#redisClient.set(
-        cacheKey,
-        JSON.stringify(results),
-        opts
-      );
+      await this.#redisClient.set(cacheKey, JSON.stringify(results), opts);
       /**
        * If negative expire argument provided or no expire specified, cache results with no expiration
        * Uses negative number to indicate no expiration to avoid adding unnecessary expire flag argument
@@ -167,10 +163,6 @@ export default class Denostore {
       const { response, request } = ctx;
       try {
         const { query, variables } = await request.body().value;
-<<<<<<< HEAD
-        // console.log(query, variables);
-=======
->>>>>>> mvp
 
         // resolve GraphQL query
         const graphqlResults = await graphql({
