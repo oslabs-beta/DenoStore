@@ -5,9 +5,9 @@ import {
 import { superoak } from 'https://deno.land/x/superoak@4.7.0/mod.ts';
 import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
+import { Denostore } from '../mod.ts';
 import { typeDefs } from './typeDefs.ts';
 import { resolvers } from './resolver.ts';
-import { Denostore } from '../mod.ts';
 
 /**
  test application invocation worked
@@ -40,7 +40,7 @@ Deno.test('Denostore started', async (t) => {
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
     const request = await superoak(app, true);
-    // const start = new Date().getMilliseconds();
+    const start = new Date().getMilliseconds();
     await request
       .post('/graphql')
       .type('json')
@@ -49,7 +49,23 @@ Deno.test('Denostore started', async (t) => {
         '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
       );
 
-    // console.log(new Date().getMilliseconds() - start);
+    console.log('first call-->', new Date().getMilliseconds() - start);
+  });
+  await t.step('same exact query (caching ability)', async () => {
+    const testQuery =
+      '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
+
+    const request = await superoak(app, true);
+    const start = new Date().getMilliseconds();
+    await request
+      .post('/graphql')
+      .type('json')
+      .send({ query: testQuery })
+      .expect(
+        '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
+      );
+
+    console.log('Second Call-->', new Date().getMilliseconds() - start);
   });
   await redisClient.flushdb();
   await redisClient.close();
