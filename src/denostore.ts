@@ -76,7 +76,7 @@ export default class Denostore {
    ** Creates cache key by accessing resolver 'info' AST for query information
    ** Accepts optional expire time in seconds argument
    ** Retrieves cached value using created cache key
-   ** If cache key does not exist for a query, invokes provide callback and sets cache with results
+   ** If cache key does not exist for a query, invokes provided callback and sets cache with results
   */
   async cache({ info, ex }: cacheArgs, callback: cacheCallbackArg) {
     const cacheKey = buildCacheKey(info);
@@ -119,7 +119,7 @@ export default class Denostore {
         opts
       );
       /**
-       * If negative expire argument provide or no expire specified, cache results with no expiration
+       * If negative expire argument provided or no expire specified, cache results with no expiration
        * Uses negative number to indicate no expiration to avoid adding unnecessary expire flag argument
        * while still fulfilling Redis type checks
        */
@@ -178,7 +178,7 @@ export default class Denostore {
         });
 
         // if errors delete results data
-        graphqlResults.errors ? delete graphqlResults.data : null;
+        if (graphqlResults.errors) delete graphqlResults.data;
         // respond with resolved query results
         response.status = graphqlResults.errors ? 500 : 200;
         response.body = graphqlResults;
