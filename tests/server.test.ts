@@ -1,6 +1,7 @@
 import {
-  assertEquals,
-  assertNotEquals,
+  // assertEquals,
+  // assertNotEquals,
+  assert,
 } from 'https://deno.land/std@0.134.0/testing/asserts.ts';
 import { superoak } from 'https://deno.land/x/superoak@4.7.0/mod.ts';
 import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
@@ -35,6 +36,8 @@ Deno.test('Denostore started', async (t) => {
   const app = new Application();
   app.use(denostore.routes(), denostore.allowedMethods());
 
+  let firstCallTime: number;
+
   await t.step('accept query and respond with correct query', async () => {
     const testQuery =
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
@@ -48,10 +51,9 @@ Deno.test('Denostore started', async (t) => {
       .expect(
         '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
       );
-
-    console.log('first call-->', new Date().getMilliseconds() - start);
+    firstCallTime = new Date().getMilliseconds() - start;
   });
-  await t.step('same exact query (caching ability)', async () => {
+  await t.step('same exact query (caching ability)', async (t) => {
     const testQuery =
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
@@ -65,8 +67,12 @@ Deno.test('Denostore started', async (t) => {
         '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
       );
 
-    console.log('Second Call-->', new Date().getMilliseconds() - start);
+    await t.step('Speed of query is faster than first call', () => {
+      const secondCallTime: number = new Date().getMilliseconds() - start;
+      assert(firstCallTime > secondCallTime);
+    });
   });
+
   await redisClient.flushdb();
   await redisClient.close();
 
