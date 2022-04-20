@@ -7,7 +7,7 @@ import { superoak } from 'https://deno.land/x/superoak@4.7.0/mod.ts';
 import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { makeExecutableSchema } from 'https://deno.land/x/graphql_tools@0.0.2/mod.ts';
-import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
+// import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { Denostore } from '../mod.ts';
 import { typeDefs } from './schema/typeDefs.ts';
 import { resolvers } from './schema/resolver.ts';
@@ -23,28 +23,28 @@ import { resolvers } from './schema/resolver.ts';
  mock queries
  */
 
-Deno.test('Serving UI page on GET request', async () => {
-  const redisClient = await connect({
-    hostname: 'localhost',
-    port: 6379,
-  });
+// Deno.test('Serving UI page on GET request', async () => {
+//   const redisClient = await connect({
+//     hostname: 'localhost',
+//     port: 6379,
+//   });
 
-  const denostore = new Denostore({
-    usePlayground: true,
-    schema: { typeDefs, resolvers },
-    redisClient,
-  });
+//   const denostore = new Denostore({
+//     usePlayground: true,
+//     schema: { typeDefs, resolvers },
+//     redisClient,
+//   });
 
-  const app = new Application();
-  app.use(denostore.routes(), denostore.allowedMethods());
+//   const app = new Application();
+//   app.use(denostore.routes(), denostore.allowedMethods());
 
-  const UI = renderPlaygroundPage({});
-  const request = await superoak(app, true);
-  await request.get('/graphql').expect(200).expect(UI);
+//   const UI = renderPlaygroundPage({});
+//   const request = await superoak(app, true);
+//   await request.get('/graphql').expect(200).expect(UI);
 
-  await redisClient.flushdb();
-  await redisClient.close();
-});
+//   await redisClient.flushdb();
+//   await redisClient.close();
+// });
 
 Deno.test('Denostore started for standard setup', async (t) => {
   const redisClient = await connect({
