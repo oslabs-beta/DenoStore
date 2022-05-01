@@ -98,8 +98,6 @@ export default class Denostore {
       throw new Error('Error: Query error. See server console.');
     }
 
-    console.log('cache miss');
-
     // redis caching options
     let opts: optsVariable;
 
@@ -131,7 +129,6 @@ export default class Denostore {
    */
   async clear(): Promise<void> {
     await this.#redisClient.flushall();
-    console.log('cleared cache');
   }
 
   routes(): Middleware {
