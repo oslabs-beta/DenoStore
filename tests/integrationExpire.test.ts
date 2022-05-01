@@ -72,6 +72,4 @@ Deno.test('Expiration testing', async (t) => {
 
   await redisClient.flushdb();
   await redisClient.close();
-
-  // console.log(Deno.resources());
 });
