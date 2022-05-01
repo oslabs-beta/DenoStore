@@ -27,12 +27,12 @@ When implementing caching of GraphQL queries there are a few main issues to cons
 DenoStore was built to address the above challenges and empowers users with a caching tool that is modular, efficient and quick to implement.
 
 ## <a name="features"></a> Features
-- Seamlessly embeds caching functionality to only query types that need it by allowing the user to implement cache module at the **query resolver level**
-- Caches resolver results rather than query results so if queries are asking for different fields or using different aliases, fragments, etc. they can still use existing cached values as long as they come from the same resolver call. `fix this bullet point!!!`
+- Seamlessly embeds caching functionality to only query types that need it by allowing the user to implement cache module at the query resolver level
+- Caches resolver results rather than query results so different queries can still use existing cached values as long as they come from the same resolver call. `fix this bullet point!!!`
 - Leverages *[Redis](https://redis.io/)* as an in-memory low latency server-side cache
 - Integrates with *[Oak](https://oakserver.github.io/oak/)* middleware framework to handle GraphQL queries with error handling
-- Resolver level and global expiration controls
-- *GraphQL Playground IDE* available for constructing and sending queries
+- Provides global and resolver level expiration controls
+- Makes *GraphQL Playground IDE* available for constructing and sending queries
 - Supports all query options (e.g. arguments, directives, variables, fragments)
 
 ## <a name="installation"></a> Installation
@@ -58,7 +58,7 @@ import { Denostore } from 'https://deno.land/x/denostore@v0.1.0/mod.ts';
 
 **Oak**
 
-Denostore uses the popular middleware framework Oak https://deno.land/x/oak to setup routes for handling GraphQL queries and optionally using the *GraphQL Playground IDE*. Like DenoStore, Oak will be installed directly from deno.land the first time you run your server unless you already have it cached. 
+Denostore uses the popular middleware framework Oak https://deno.land/x/oak to set up routes for handling GraphQL queries and optionally using the *GraphQL Playground IDE*. Like DenoStore, Oak will be installed directly from deno.land the first time you run your server unless you already have it cached. 
 
 **Using v10.2.0 is highly recommended**
 
@@ -102,9 +102,9 @@ app.use(denostore.routes(), denostore.allowedMethods());
 ```
 ### <a name="caching"></a> Caching
 
-**How do I setup caching?**
+**How do I set up caching?**
 
-After your Denostore instance is configured in your server, all GraphQL resolvers have access to that DenoStore instance and its methods through the context object. No additional DenoStore imports are required for your schemas.
+After your Denostore instance is configured in your server, all GraphQL resolvers have access to that DenoStore instance and its methods through the context object. Your schemas do not require any DenoStore imports.
 
 **Cache Example**
 
@@ -156,7 +156,7 @@ denostore.cache({ info }, callback)
 ```
 
 `cache` is an asynchronous method that takes two arguments:
-- Cache arguments object where **info** is the only required property. Info must be passed as a property in this object as DenoStore parses the info AST for query information.
+- Cache arguments object where **info** is the only required property. Info must be passed as a property in this object as DenoStore parses the info AST for query information
 - Your resolver logic to execute if the results are not in the cache
 
 **Full example of schema with caching**
@@ -176,7 +176,7 @@ denostore.cache({ info, ex: 5 }, callback)
 
 **Setting global expiration in DenoStore config**
 
-You can also add the `defaultEx` property with value expiration time in seconds when configuring the denostore instance on your server.
+You can also add the `defaultEx` property with value expiration time in seconds when configuring the `denostore` instance on your server.
 
 ```ts
 // configure denostore
@@ -199,7 +199,7 @@ When determining expiration for a cached value, DenoStore will always prioritize
 
 **DenoStore Clear Method**
 
-There may be times where you want to clear the cache in resolver logic such as when you perform a mutation. In these cases you can invoke the DenoStore `clear` method.
+There may be times when you want to clear the cache in resolver logic such as when you perform a mutation. In these cases you can invoke the DenoStore `clear` method.
 
 ```ts
 Mutation: {
@@ -226,7 +226,7 @@ Mutation: {
 
 **Clearing with redis-cli**
 
-You can also clear the Redis cache at any time using the redis command line interface
+You can also clear the Redis cache at any time using the redis command line interface.
 
 Clear keys from all databases on Redis instance
 ```sh
@@ -249,5 +249,16 @@ redis-cli flushdb
 
 ## <a name="developers"></a> Developers
 
+- [Jake Van Vorhis](https://github.com/jakedoublev)
+- [James Kim](https://github.com/Jamesmjkim)
+- [Jessica Wachtel](https://github.com/JessicaWachtel)
+- [Scott Tatsuno](https://github.com/sktatsuno)
+- [TX Ho](https://github.com/lawauditswe)
+
 ## <a name="license"></a> License
 
+This product is licensed under the MIT License - see the LICENSE.md file for details.
+
+This is an open source product.
+
+This product is accelerated by [OS Labs](https://opensourcelabs.io/).
