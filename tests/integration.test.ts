@@ -10,7 +10,7 @@ import { makeExecutableSchema } from 'https://deno.land/x/graphql_tools@0.0.2/mo
 // import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { Denostore } from '../mod.ts';
 import { typeDefs } from './schema/typeDefs.ts';
-import { resolvers } from './schema/resolver.ts';
+import { resolvers } from './schema/expireResolver.ts';
 
 /**
  test application invocation worked
