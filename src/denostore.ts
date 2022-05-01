@@ -189,17 +189,6 @@ export default class Denostore {
       }
     });
 
-    // update/remove later for security
-    this.#router.delete('/delete', async (ctx: Context): Promise<void> => {
-      await this.#redisClient.flushall();
-
-      console.log('Deleted Cache');
-
-      ctx.response.status = 202;
-      ctx.response.body = 'Cleared Cache';
-      return;
-    });
-
     return this.#router.routes();
   }
 
