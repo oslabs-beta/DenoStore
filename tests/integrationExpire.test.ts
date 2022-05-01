@@ -5,7 +5,7 @@ import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { Denostore } from '../mod.ts';
 import { typeDefs } from './schema/typeDefs.ts';
 import { resolvers } from './schema/expireResolver.ts';
-import { delay } from "https://deno.land/std/async/mod.ts";
+import { delay } from "https://deno.land/std@0.137.0/async/mod.ts";
 
 Deno.test('Expiration testing', async (t) => {
   const redisClient = await connect({
