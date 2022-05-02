@@ -71,13 +71,13 @@ export default class Denostore {
     }
   }
 
-  /** 
+  /**
    ** Caching method to be invoked in the field resolver of queries user wants cached
    ** Creates cache key by accessing resolver 'info' AST for query information
    ** Accepts optional expire time in seconds argument
    ** Retrieves cached value using created cache key
    ** If cache key does not exist for a query, invokes provided callback and sets cache with results
-  */
+   */
   async cache({ info, ex }: cacheArgs, callback: cacheCallbackArg) {
     const cacheKey = buildCacheKey(info);
     const cacheValue = await this.#redisClient.get(cacheKey);
@@ -98,8 +98,6 @@ export default class Denostore {
       throw new Error('Error: Query error. See server console.');
     }
 
-    console.log('cache miss');
-
     // redis caching options
     let opts: optsVariable;
 
@@ -113,11 +111,7 @@ export default class Denostore {
 
     // set results in cache with options if specified
     if (opts) {
-      await this.#redisClient.set(
-        cacheKey,
-        JSON.stringify(results),
-        opts
-      );
+      await this.#redisClient.set(cacheKey, JSON.stringify(results), opts);
       /**
        * If negative expire argument provided or no expire specified, cache results with no expiration
        * Uses negative number to indicate no expiration to avoid adding unnecessary expire flag argument
@@ -135,7 +129,6 @@ export default class Denostore {
    */
   async clear(): Promise<void> {
     await this.#redisClient.flushall();
-    console.log('cleared cache');
   }
 
   routes(): Middleware {
@@ -191,17 +184,6 @@ export default class Denostore {
         );
         throw err;
       }
-    });
-
-    // update/remove later for security
-    this.#router.delete('/delete', async (ctx: Context): Promise<void> => {
-      await this.#redisClient.flushall();
-
-      console.log('Deleted Cache');
-
-      ctx.response.status = 202;
-      ctx.response.body = 'Cleared Cache';
-      return;
     });
 
     return this.#router.routes();
