@@ -42,7 +42,7 @@ Deno.test('Denostore started for standard setup', async (t) => {
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
     const request = await superoak(app, true);
-    const start = new Date().getMilliseconds();
+    const start = Date.now();
     await request
       .post('/graphql')
       .type('json')
@@ -50,14 +50,14 @@ Deno.test('Denostore started for standard setup', async (t) => {
       .expect(
         '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
       );
-    firstCallTime = new Date().getMilliseconds() - start;
+    firstCallTime = Date.now() - start;
   });
   await t.step('Same exact query (Testing Caching ability)', async (t) => {
     const testQuery =
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
     const request = await superoak(app, true);
-    const start = new Date().getMilliseconds();
+    const start = Date.now();
     await request
       .post('/graphql')
       .type('json')
@@ -67,7 +67,7 @@ Deno.test('Denostore started for standard setup', async (t) => {
       );
 
     await t.step('Speed of query is faster than first call', () => {
-      const secondCallTime: number = new Date().getMilliseconds() - start;
+      const secondCallTime: number = Date.now() - start;
       assert(firstCallTime > secondCallTime);
     });
   });
@@ -79,7 +79,7 @@ Deno.test('Denostore started for standard setup', async (t) => {
         '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n   country\n}\n}\n';
 
       const request = await superoak(app, true);
-      const start = new Date().getMilliseconds();
+      const start = Date.now();
       await request
         .post('/graphql')
         .type('json')
@@ -91,7 +91,7 @@ Deno.test('Denostore started for standard setup', async (t) => {
       await t.step(
         'Speed of query with different fields is faster than first call',
         () => {
-          const thirdCallTime: number = new Date().getMilliseconds() - start;
+          const thirdCallTime: number = Date.now() - start;
           assert(firstCallTime > thirdCallTime);
         }
       );
@@ -124,7 +124,7 @@ Deno.test({
         '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
       const request = await superoak(app, true);
-      const start = new Date().getMilliseconds();
+      const start = Date.now();
       await request
         .post('/graphql')
         .type('json')
@@ -132,14 +132,14 @@ Deno.test({
         .expect(
           '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
         );
-      firstCallTime = new Date().getMilliseconds() - start;
+      firstCallTime = Date.now() - start;
     });
     await t.step('Same exact query (Testing Caching ability)', async (t) => {
       const testQuery =
         '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
       const request = await superoak(app, true);
-      const start = new Date().getMilliseconds();
+      const start = Date.now();
       await request
         .post('/graphql')
         .type('json')
@@ -149,7 +149,7 @@ Deno.test({
         );
 
       await t.step('Speed of query is faster than first call', () => {
-        const secondCallTime: number = new Date().getMilliseconds() - start;
+        const secondCallTime: number = Date.now() - start;
         assert(firstCallTime > secondCallTime);
       });
     });
@@ -160,7 +160,7 @@ Deno.test({
           '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n   country\n}\n}\n';
 
         const request = await superoak(app, true);
-        const start = new Date().getMilliseconds();
+        const start = Date.now();
         await request
           .post('/graphql')
           .type('json')
@@ -172,7 +172,7 @@ Deno.test({
         await t.step(
           'Speed of query with different fields is faster than first call',
           () => {
-            const thirdCallTime: number = new Date().getMilliseconds() - start;
+            const thirdCallTime: number = Date.now() - start;
             assert(firstCallTime > thirdCallTime);
           }
         );
@@ -209,7 +209,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
     const request = await superoak(app, true);
-    const start = new Date().getMilliseconds();
+    const start = Date.now();
     await request
       .post('/graphql')
       .type('json')
@@ -217,14 +217,14 @@ Deno.test('Denostore started passing in schema', async (t) => {
       .expect(
         '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
       );
-    firstCallTime = new Date().getMilliseconds() - start;
+    firstCallTime = Date.now() - start;
   });
   await t.step('Same exact query (Testing Caching ability)', async (t) => {
     const testQuery =
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
     const request = await superoak(app, true);
-    const start = new Date().getMilliseconds();
+    const start = Date.now();
     await request
       .post('/graphql')
       .type('json')
@@ -234,7 +234,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
       );
 
     await t.step('Speed of query is faster than first call', () => {
-      const secondCallTime: number = new Date().getMilliseconds() - start;
+      const secondCallTime: number = Date.now() - start;
       assert(firstCallTime > secondCallTime);
     });
   });
@@ -245,7 +245,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
         '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n   country\n}\n}\n';
 
       const request = await superoak(app, true);
-      const start = new Date().getMilliseconds();
+      const start = Date.now();
       await request
         .post('/graphql')
         .type('json')
@@ -257,7 +257,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
       await t.step(
         'Speed of query with different fields is faster than first call',
         () => {
-          const thirdCallTime: number = new Date().getMilliseconds() - start;
+          const thirdCallTime: number = Date.now() - start;
           assert(firstCallTime > thirdCallTime);
         }
       );
