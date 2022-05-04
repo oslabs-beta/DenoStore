@@ -44,7 +44,17 @@ DenoStore uses Redis data store for caching
 - After installing, start the Redis server by running `redis-server`
 - You can test that your Redis server is running by connecting with the Redis CLI:
 
-[Insert image from Redis docs with redis cli ping]
+```sh
+redis-cli 
+127.0.0.1:6379> ping
+PONG
+```
+
+- To stop your Redis server:
+`redis-cli shutdown`
+
+- To restart your Redis server: 
+`redis-server restart`
 
 - Redis uses port `6379` by default
 
@@ -73,7 +83,7 @@ Implementing DenoStore takes only a few steps and since it is modular you can im
 ### <a name="server-setup"></a> Server Setup
 
 To set up your server:
-- Import Oak, Denostore and your schema
+- Import *Oak*, *Denostore* class and your *schema*
 - Create a new instance of Denostore with your desired configuration
 - Add the route to handle GraphQL queries (/graphql by default)
 
