@@ -20,6 +20,7 @@ http://www.denostore.io
 	- [Server Setup](#server-setup)
 	- [Caching](#caching)
   - [Expiration](#expiration)
+- [Further Documentation](#documentation)
 - [Contributions](#contributions)
 - [Developers](#developers)
 - [License](#license)
@@ -66,10 +67,10 @@ PONG
 
 ### DenoStore
 
-DenoStore is hosted as a third-party module at https://deno.land/x/denostore and will be installed the first time you import it and run your server.
+DenoStore is hosted as a third-party module at https://deno.land/x/denostore and will be installed the first time you import it and run your server. It is recommended to specify the latest DenoStore version so Deno does not use a previously cached version.
 
 ```ts
-import { Denostore } from 'https://deno.land/x/denostore@v1.0.0/mod.ts';
+import { Denostore } from 'https://deno.land/x/denostore@<latestversion>/mod.ts';
 ```
 
 ### Oak
@@ -93,12 +94,12 @@ To set up your server:
 - Create a new instance of Denostore with your desired configuration
 - Add the route to handle GraphQL queries (/graphql by default)
 
-Below is a simple example of configuring DenoStore for your server file, but there are several configuration options. Please refer to the docs [here] for details
+Below is a simple example of configuring DenoStore for your server file, but there are several configuration options. Please refer to the [docs](http://denostore.io/docs) for more details
 
 ```ts
 // imports
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
-import { Denostore } from 'https://deno.land/x/denostore@v0.1.0/mod.ts'
+import { Denostore } from 'https://deno.land/x/denostore@<latestversion>/mod.ts'
 import { typeDefs, resolvers } from './yourSchema.ts';
 
 const PORT = 3000;
@@ -251,6 +252,10 @@ Clear keys from currently selected database (if using same Redis client for othe
 ```sh
 redis-cli flushdb
 ```
+
+## <a name="documentation"></a> Further Documentation
+
+http://denostore.io/docs
 
 ## <a name="contributions"></a> Contributions
 
