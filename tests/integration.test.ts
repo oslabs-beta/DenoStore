@@ -1,11 +1,9 @@
-import {
-  assert,
-} from 'https://deno.land/std@0.134.0/testing/asserts.ts';
+import { assert } from 'https://deno.land/std@0.134.0/testing/asserts.ts';
 import { superoak } from 'https://deno.land/x/superoak@4.7.0/mod.ts';
 import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { makeExecutableSchema } from 'https://deno.land/x/graphql_tools@0.0.2/mod.ts';
-import { Denostore } from '../mod.ts';
+import { DenoStore } from '../mod.ts';
 import { typeDefs } from './schema/typeDefs.ts';
 import { resolvers } from './schema/resolver.ts';
 
@@ -20,12 +18,12 @@ import { resolvers } from './schema/resolver.ts';
  mock queries
  */
 
-Deno.test('Denostore started for standard setup', async (t) => {
+Deno.test('DenoStore started for standard setup', async (t) => {
   const redisClient = await connect({
     hostname: 'localhost',
     port: 6379,
   });
-  const denostore = new Denostore({
+  const DenoStoreCache = new DenoStore({
     route: '/graphql',
     usePlayground: false,
     schema: { typeDefs, resolvers },
@@ -33,7 +31,7 @@ Deno.test('Denostore started for standard setup', async (t) => {
   });
 
   const app = new Application();
-  app.use(denostore.routes(), denostore.allowedMethods());
+  app.use(DenoStoreCache.routes(), DenoStoreCache.allowedMethods());
 
   let firstCallTime: number;
 
@@ -105,9 +103,9 @@ Deno.test('Denostore started for standard setup', async (t) => {
 });
 
 Deno.test({
-  name: 'Denostore started using redis port',
+  name: 'DenoStore started using redis port',
   fn: async (t) => {
-    const denostore = new Denostore({
+    const DenoStoreCache = new DenoStore({
       route: '/graphql',
       usePlayground: false,
       schema: { typeDefs, resolvers },
@@ -115,7 +113,7 @@ Deno.test({
     });
 
     const app = new Application();
-    app.use(denostore.routes(), denostore.allowedMethods());
+    app.use(DenoStoreCache.routes(), DenoStoreCache.allowedMethods());
 
     let firstCallTime: number;
 
@@ -178,13 +176,13 @@ Deno.test({
         );
       }
     );
-    await denostore.clear();
+    await DenoStoreCache.clear();
   },
   sanitizeResources: false,
   sanitizeOps: false,
 });
 
-Deno.test('Denostore started passing in schema', async (t) => {
+Deno.test('DenoStore started passing in schema', async (t) => {
   const redisClient = await connect({
     hostname: 'localhost',
     port: 6379,
@@ -192,7 +190,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
 
   const schema = makeExecutableSchema({ typeDefs, resolvers });
 
-  const denostore = new Denostore({
+  const DenoStoreCache = new DenoStore({
     route: '/graphql',
     usePlayground: false,
     schema,
@@ -200,7 +198,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
   });
 
   const app = new Application();
-  app.use(denostore.routes(), denostore.allowedMethods());
+  app.use(DenoStoreCache.routes(), DenoStoreCache.allowedMethods());
 
   let firstCallTime: number;
 
