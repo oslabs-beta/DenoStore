@@ -20,6 +20,7 @@ http://www.denostore.io
 	- [Server Setup](#server-setup)
 	- [Caching](#caching)
   - [Expiration](#expiration)
+- [Contributions](#contributions)
 - [Developers](#developers)
 - [License](#license)
 
@@ -250,6 +251,22 @@ Clear keys from currently selected database (if using same Redis client for othe
 ```sh
 redis-cli flushdb
 ```
+
+## <a name="contributions"></a> Contributions
+
+We welcome contributions to DenoStore as they are key to growing the Deno ecosystem and community
+
+### Start Contributing
+
+1. Fork and clone the repository
+2. Ensure [Deno](https://deno.land/manual/getting_started/installation) and [Redis](https://redis.io/docs/getting-started/) are installed on your machine
+3. Redis server must be [running](#installation) to use DenoStore
+4. Checkout feature/issue branch off of *main* branch
+
+### Running Testing
+1. Make sure Redis server is [running](#installation) on port *6379* when testing
+2. To run all tests run `deno test tests/ --allow-net`
+3. If tests pass you can submit a PR to the DenoStore *main* branch 
 
 ## <a name="developers"></a> Developers
 
