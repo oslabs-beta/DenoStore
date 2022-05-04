@@ -19,7 +19,6 @@ http://www.denostore.io
 - [Getting Started](#getting-started)
 	- [Server Setup](#server-setup)
 	- [Caching](#caching)
-- [Contribute](#contribute)  
 - [Developers](#developers)
 - [License](#license)
 
@@ -42,7 +41,7 @@ DenoStore was built to address the above challenges and empowers users with a ca
 
 ## <a name="installation"></a> Installation
 
-**Redis**
+### Redis
 
 DenoStore uses Redis data store for caching
 - If you do not yet have Redis installed, please follow the instructions for your operation system here: https://redis.io/docs/getting-started/installation/
@@ -63,7 +62,7 @@ PONG
 
 - Redis uses port `6379` by default
 
-**DenoStore**
+### DenoStore
 
 DenoStore is hosted as a third-party module at https://deno.land/x/denostore and will be installed the first time you import it and run your server.
 
@@ -71,7 +70,7 @@ DenoStore is hosted as a third-party module at https://deno.land/x/denostore and
 import { Denostore } from 'https://deno.land/x/denostore@v1.0.0/mod.ts';
 ```
 
-**Oak**
+### Oak
 
 Denostore uses the popular middleware framework Oak https://deno.land/x/oak to set up routes for handling GraphQL queries and optionally using the *GraphQL Playground IDE*. Like DenoStore, Oak will be installed directly from deno.land the first time you run your server unless you already have it cached. 
 
@@ -121,7 +120,7 @@ app.use(denostore.routes(), denostore.allowedMethods());
 
 After your Denostore instance is configured in your server, all GraphQL resolvers have access to that DenoStore instance and its methods through the context object. Your schemas do not require any DenoStore imports.
 
-**Cache Example**
+#### Cache Implementation Example
 
 Here is a simple example of a query resolver before and after adding the cache method from DenoStore. This is a query to pull information for a particular rocket from the SpaceX API.
 
@@ -172,16 +171,12 @@ denostore.cache({ info }, callback)
 
 `cache` is an asynchronous method that takes two arguments:
 - Cache arguments object where **info** is the only required property. Info must be passed as a property in this object as DenoStore parses the info AST for query information
-- Your resolver logic to execute if the results are not in the cache
-
-**Full example of schema with caching**
-
-[Is this part necessary?]
+- Your data store call to execute if the results are not in the cache
 
 ### Expiration
 Expiration time for cached results can be set for each resolver and/or globally. 
 
-**Setting expiration in the cache method**
+#### Setting expiration in the cache method
 
 You can easily pass in cache expiration time in seconds as a value to the `ex` property to the cache arguments object:  
 ```ts
@@ -189,7 +184,7 @@ You can easily pass in cache expiration time in seconds as a value to the `ex` p
 denostore.cache({ info, ex: 5 }, callback)
 ```
 
-**Setting global expiration in DenoStore config**
+#### Setting global expiration in DenoStore config
 
 You can also add the `defaultEx` property with value expiration time in seconds when configuring the `denostore` instance on your server.
 
@@ -212,7 +207,7 @@ When determining expiration for a cached value, DenoStore will always prioritize
 
 ### Clearing Cache
 
-**DenoStore Clear Method**
+#### DenoStore Clear Method
 
 There may be times when you want to clear the cache in resolver logic such as when you perform a mutation. In these cases you can invoke the DenoStore `clear` method.
 
@@ -237,7 +232,7 @@ Mutation: {
     },
 ```
 
-**Clearing with redis-cli**
+#### Clearing with redis-cli
 
 You can also clear the Redis cache at any time using the redis command line interface.
 
