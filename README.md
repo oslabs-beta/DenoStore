@@ -10,7 +10,7 @@ DenoStore brings modular and low latency caching of GraphQL queries to a Deno/Oa
 
 http://www.denostore.io
 
-![Demo GIF](img/DenoStoreDemo.gif)
+![](img/DenoStoreDemo.gif)
 
 ## Table of Contents
 - [Description](#description)
