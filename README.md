@@ -6,7 +6,7 @@ DenoStore brings modular and low latency caching of GraphQL queries to a Deno/Oa
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/oslabs-beta/DenoStore/blob/main/LICENSE.md)
 [![Contributions](https://img.shields.io/badge/contributions-welcome-blue)]()
 
-![Demo](https://www.dropbox.com/s/s0bs5mfktmrfiyp/DenoStoreDemoGIF.gif)
+![Demo](https://github.com/oslabs-beta/DenoStore/blob/readme/DenoStoreDemoGIF.gif)
 
 ## Table of Contents
 - [Description](#description)
