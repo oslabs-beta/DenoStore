@@ -14,14 +14,28 @@ import type {
 } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import type { IResolvers } from 'https://deno.land/x/graphql_tools@0.0.2/utils/interfaces.ts';
 
-export interface DenostoreArgs {
+/**
+ ** Denostore Args
+ ** Require either redis client instance or redis port and not both
+ */
+interface BaseArgs {
   schema: userSchemaArg;
-  redisClient?: Redis;
-  redisPort?: number;
   route?: string;
   usePlayground?: boolean;
   defaultEx?: number | undefined;
 }
+
+interface RedisClientArgs extends BaseArgs {
+  redisClient: Redis;
+  redisPort?: never;
+}
+
+interface RedisPortArgs extends BaseArgs {
+  redisPort: number;
+  redisClient?: never;
+}
+
+export type DenostoreArgs = RedisClientArgs | RedisPortArgs;
 
 export type defaultExArg = number | undefined;
 
@@ -31,6 +45,9 @@ export type redisPortArg = number | undefined;
 
 export type userSchemaArg = GraphQLSchema | ExecutableSchemaArgs;
 
+/**
+ * backend call to your data store - results will be cached by cache
+ */
 export type cacheCallbackArg = { (): Promise<{}> | {} };
 
 export type optsVariable = SetOpts | undefined;
