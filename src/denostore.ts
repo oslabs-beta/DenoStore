@@ -84,7 +84,6 @@ export default class Denostore {
 
     // cache hit: return cached data
     if (cacheValue) {
-      console.log('Returning cached result');
       return JSON.parse(cacheValue);
     }
 
