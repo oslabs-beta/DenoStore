@@ -1,13 +1,10 @@
 import {
-  // assertEquals,
-  // assertNotEquals,
   assert,
 } from 'https://deno.land/std@0.134.0/testing/asserts.ts';
 import { superoak } from 'https://deno.land/x/superoak@4.7.0/mod.ts';
 import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import { makeExecutableSchema } from 'https://deno.land/x/graphql_tools@0.0.2/mod.ts';
-// import { renderPlaygroundPage } from 'https://deno.land/x/oak_graphql@0.6.3/graphql-playground-html/render-playground-html.ts';
 import { Denostore } from '../mod.ts';
 import { typeDefs } from './schema/typeDefs.ts';
 import { resolvers } from './schema/resolver.ts';
@@ -22,29 +19,6 @@ import { resolvers } from './schema/resolver.ts';
  mock schemas
  mock queries
  */
-
-// Deno.test('Serving UI page on GET request', async () => {
-//   const redisClient = await connect({
-//     hostname: 'localhost',
-//     port: 6379,
-//   });
-
-//   const denostore = new Denostore({
-//     usePlayground: true,
-//     schema: { typeDefs, resolvers },
-//     redisClient,
-//   });
-
-//   const app = new Application();
-//   app.use(denostore.routes(), denostore.allowedMethods());
-
-//   const UI = renderPlaygroundPage({});
-//   const request = await superoak(app, true);
-//   await request.get('/graphql').expect(200).expect(UI);
-
-//   await redisClient.flushdb();
-//   await redisClient.close();
-// });
 
 Deno.test('Denostore started for standard setup', async (t) => {
   const redisClient = await connect({
@@ -68,7 +42,7 @@ Deno.test('Denostore started for standard setup', async (t) => {
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
     const request = await superoak(app, true);
-    const start = new Date().getMilliseconds();
+    const start = Date.now();
     await request
       .post('/graphql')
       .type('json')
@@ -76,14 +50,14 @@ Deno.test('Denostore started for standard setup', async (t) => {
       .expect(
         '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
       );
-    firstCallTime = new Date().getMilliseconds() - start;
+    firstCallTime = Date.now() - start;
   });
   await t.step('Same exact query (Testing Caching ability)', async (t) => {
     const testQuery =
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
     const request = await superoak(app, true);
-    const start = new Date().getMilliseconds();
+    const start = Date.now();
     await request
       .post('/graphql')
       .type('json')
@@ -93,7 +67,7 @@ Deno.test('Denostore started for standard setup', async (t) => {
       );
 
     await t.step('Speed of query is faster than first call', () => {
-      const secondCallTime: number = new Date().getMilliseconds() - start;
+      const secondCallTime: number = Date.now() - start;
       assert(firstCallTime > secondCallTime);
     });
   });
@@ -105,7 +79,7 @@ Deno.test('Denostore started for standard setup', async (t) => {
         '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n   country\n}\n}\n';
 
       const request = await superoak(app, true);
-      const start = new Date().getMilliseconds();
+      const start = Date.now();
       await request
         .post('/graphql')
         .type('json')
@@ -117,7 +91,7 @@ Deno.test('Denostore started for standard setup', async (t) => {
       await t.step(
         'Speed of query with different fields is faster than first call',
         () => {
-          const thirdCallTime: number = new Date().getMilliseconds() - start;
+          const thirdCallTime: number = Date.now() - start;
           assert(firstCallTime > thirdCallTime);
         }
       );
@@ -150,7 +124,7 @@ Deno.test({
         '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
       const request = await superoak(app, true);
-      const start = new Date().getMilliseconds();
+      const start = Date.now();
       await request
         .post('/graphql')
         .type('json')
@@ -158,14 +132,14 @@ Deno.test({
         .expect(
           '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
         );
-      firstCallTime = new Date().getMilliseconds() - start;
+      firstCallTime = Date.now() - start;
     });
     await t.step('Same exact query (Testing Caching ability)', async (t) => {
       const testQuery =
         '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
       const request = await superoak(app, true);
-      const start = new Date().getMilliseconds();
+      const start = Date.now();
       await request
         .post('/graphql')
         .type('json')
@@ -175,7 +149,7 @@ Deno.test({
         );
 
       await t.step('Speed of query is faster than first call', () => {
-        const secondCallTime: number = new Date().getMilliseconds() - start;
+        const secondCallTime: number = Date.now() - start;
         assert(firstCallTime > secondCallTime);
       });
     });
@@ -186,7 +160,7 @@ Deno.test({
           '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n   country\n}\n}\n';
 
         const request = await superoak(app, true);
-        const start = new Date().getMilliseconds();
+        const start = Date.now();
         await request
           .post('/graphql')
           .type('json')
@@ -198,7 +172,7 @@ Deno.test({
         await t.step(
           'Speed of query with different fields is faster than first call',
           () => {
-            const thirdCallTime: number = new Date().getMilliseconds() - start;
+            const thirdCallTime: number = Date.now() - start;
             assert(firstCallTime > thirdCallTime);
           }
         );
@@ -235,7 +209,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
     const request = await superoak(app, true);
-    const start = new Date().getMilliseconds();
+    const start = Date.now();
     await request
       .post('/graphql')
       .type('json')
@@ -243,14 +217,14 @@ Deno.test('Denostore started passing in schema', async (t) => {
       .expect(
         '{"data":{"oneRocket":{"rocket_name":"Falcon 9","rocket_type":"rocket"}}}'
       );
-    firstCallTime = new Date().getMilliseconds() - start;
+    firstCallTime = Date.now() - start;
   });
   await t.step('Same exact query (Testing Caching ability)', async (t) => {
     const testQuery =
       '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n  }\n}\n';
 
     const request = await superoak(app, true);
-    const start = new Date().getMilliseconds();
+    const start = Date.now();
     await request
       .post('/graphql')
       .type('json')
@@ -260,7 +234,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
       );
 
     await t.step('Speed of query is faster than first call', () => {
-      const secondCallTime: number = new Date().getMilliseconds() - start;
+      const secondCallTime: number = Date.now() - start;
       assert(firstCallTime > secondCallTime);
     });
   });
@@ -271,7 +245,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
         '{\n  oneRocket(id: "falcon9") {\n    rocket_name\n    rocket_type\n   country\n}\n}\n';
 
       const request = await superoak(app, true);
-      const start = new Date().getMilliseconds();
+      const start = Date.now();
       await request
         .post('/graphql')
         .type('json')
@@ -283,7 +257,7 @@ Deno.test('Denostore started passing in schema', async (t) => {
       await t.step(
         'Speed of query with different fields is faster than first call',
         () => {
-          const thirdCallTime: number = new Date().getMilliseconds() - start;
+          const thirdCallTime: number = Date.now() - start;
           assert(firstCallTime > thirdCallTime);
         }
       );
