@@ -6,7 +6,7 @@ DenoStore brings modular and low latency caching of GraphQL queries to a Deno/Oa
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/oslabs-beta/DenoStore/blob/main/LICENSE.md)
 [![Contributions](https://img.shields.io/badge/contributions-welcome-blue)]()
 
-**DenoStore Query Demo UI**
+**DenoStore Query Demo**
 
 http://www.denostore.io
 
@@ -33,7 +33,7 @@ DenoStore was built to address the above challenges and empowers users with a ca
 
 ## <a name="features"></a> Features
 - Seamlessly embeds caching functionality to only query types that need it by allowing the user to implement cache module at the query resolver level
-- Caches resolver results rather than query results so different queries can still use existing cached values as long as they come from the same resolver call. `fix this bullet point!!!`
+- Caches resolver results rather than query results - so queries with different fields and formats can still use existing cached values
 - Leverages *[Redis](https://redis.io/)* as an in-memory low latency server-side cache
 - Integrates with *[Oak](https://oakserver.github.io/oak/)* middleware framework to handle GraphQL queries with error handling
 - Provides global and resolver level expiration controls
@@ -68,7 +68,7 @@ PONG
 DenoStore is hosted as a third-party module at https://deno.land/x/denostore and will be installed the first time you import it and run your server.
 
 ```ts
-import { Denostore } from 'https://deno.land/x/denostore@v0.1.0/mod.ts';
+import { Denostore } from 'https://deno.land/x/denostore@v1.0.0/mod.ts';
 ```
 
 **Oak**
@@ -224,19 +224,17 @@ Mutation: {
       { denostore }: any
     ) => {
       const result = await dataSources.userAPI.cancelTrip({ launchId });
-
-			if (!result)
-				return {
-					success: false,
-					message: 'failed to cancel trip',
-				};
+        if (!result)
+          return {
+            success: false,
+            message: 'failed to cancel trip',
+          };
 			
-			// clear/invalidate cache after successful mutation
-			await denostore.clear();
+        // clear/invalidate cache after successful mutation
+        await denostore.clear();
 
-			return result;
+        return result;
     },
-
 ```
 
 **Clearing with redis-cli**
@@ -256,11 +254,6 @@ Clear keys from currently selected database (if using same Redis client for othe
 ```sh
 redis-cli flushdb
 ```
-
-
-## <a name="faqs"></a> FAQs
-
-## <a name="contribute"></a> Contribute
 
 ## <a name="developers"></a> Developers
 
