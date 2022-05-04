@@ -19,6 +19,7 @@ http://www.denostore.io
 - [Getting Started](#getting-started)
 	- [Server Setup](#server-setup)
 	- [Caching](#caching)
+  - [Expiration](#expiration)
 - [Developers](#developers)
 - [License](#license)
 
@@ -173,7 +174,7 @@ denostore.cache({ info }, callback)
 - Cache arguments object where **info** is the only required property. Info must be passed as a property in this object as DenoStore parses the info AST for query information
 - Your data store call to execute if the results are not in the cache
 
-### Expiration
+### <a name="expiration"></a> Expiration
 Expiration time for cached results can be set for each resolver and/or globally. 
 
 #### Setting expiration in the cache method
