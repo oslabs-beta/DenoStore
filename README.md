@@ -1,5 +1,6 @@
 # **DenoStore**
-DenoStore brings modular and low latency caching of GraphQL queries to a Deno/Oak server. 
+
+DenoStore brings modular and low latency caching of GraphQL queries to a Deno/Oak server.
 
 [![Tests Passing](https://img.shields.io/badge/tests-passing-green)](https://github.com/oslabs-beta/DenoStore)
 [![deno version](https://img.shields.io/badge/deno.land/x-v1.0.0-lightgrey?logo=deno)](https://deno.land/x/denostore)
@@ -13,12 +14,13 @@ http://www.denostore.io
 ![](img/DenoStoreDemo.gif)
 
 ## Table of Contents
+
 - [Description](#description)
 - [Features](#features)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-	- [Server Setup](#server-setup)
-	- [Caching](#caching)
+  - [Server Setup](#server-setup)
+  - [Caching](#caching)
   - [Expiration](#expiration)
 - [Further Documentation](#documentation)
 - [Contributions](#contributions)
@@ -26,7 +28,9 @@ http://www.denostore.io
 - [License](#license)
 
 ## <a name="description"></a> Description
+
 When implementing caching of GraphQL queries there are a few main issues to consider:
+
 - Cache becoming stale/cache invalidation
 - More unique queries and results compared to REST due to granularity of GraphQL
 - Lack of built-in caching support (especially for Deno)
@@ -34,34 +38,36 @@ When implementing caching of GraphQL queries there are a few main issues to cons
 DenoStore was built to address the above challenges and empowers users with a caching tool that is modular, efficient and quick to implement.
 
 ## <a name="features"></a> Features
-- Seamlessly embeds caching functionality to only query types that need it by allowing the user to implement cache module at the query resolver level
-- Caches resolver results rather than query results - so queries with different fields and formats can still use existing cached values
-- Leverages *[Redis](https://redis.io/)* as an in-memory low latency server-side cache
-- Integrates with *[Oak](https://oakserver.github.io/oak/)* middleware framework to handle GraphQL queries with error handling
+
+- Seamlessly embeds caching functionality at query resolver level, giving implementing user modular decision making power to cache specific queries and not others
+- Caches resolver results rather than query results - so subsequent queries with different fields and formats can still receive existing cached values
+- Leverages _[Redis](https://redis.io/)_ as an in-memory low latency server-side cache
+- Integrates with _[Oak](https://oakserver.github.io/oak/)_ middleware framework to handle GraphQL queries with error handling
 - Provides global and resolver level expiration controls
-- Makes *GraphQL Playground IDE* available for constructing and sending queries
-- Supports all query options (e.g. arguments, directives, variables, fragments)
+- Makes _GraphQL Playground IDE_ available for constructing and sending queries during development
+- Supports all GraphQL query options (e.g. arguments, directives, variables, fragments)
 
 ## <a name="installation"></a> Installation
 
 ### Redis
 
 DenoStore uses Redis data store for caching
+
 - If you do not yet have Redis installed, please follow the instructions for your operation system here: https://redis.io/docs/getting-started/installation/
 - After installing, start the Redis server by running `redis-server`
 - You can test that your Redis server is running by connecting with the Redis CLI:
 
 ```sh
-redis-cli 
+redis-cli
 127.0.0.1:6379> ping
 PONG
 ```
 
 - To stop your Redis server:
-`redis-cli shutdown`
+  `redis-cli shutdown`
 
-- To restart your Redis server: 
-`redis-server restart`
+- To restart your Redis server:
+  `redis-server restart`
 
 - Redis uses port `6379` by default
 
@@ -75,7 +81,7 @@ import { Denostore } from 'https://deno.land/x/denostore@<latestversion>/mod.ts'
 
 ### Oak
 
-Denostore uses the popular middleware framework Oak https://deno.land/x/oak to set up routes for handling GraphQL queries and optionally using the *GraphQL Playground IDE*. Like DenoStore, Oak will be installed directly from deno.land the first time you run your server unless you already have it cached. 
+Denostore uses the popular middleware framework Oak https://deno.land/x/oak to set up routes for handling GraphQL queries and optionally using the _GraphQL Playground IDE_. Like DenoStore, Oak will be installed directly from deno.land the first time you run your server unless you already have it cached.
 
 **Using v10.2.0 is highly recommended**
 
@@ -90,16 +96,17 @@ Implementing DenoStore takes only a few steps and since it is modular you can im
 ### <a name="server-setup"></a> Server Setup
 
 To set up your server:
-- Import *Oak*, *Denostore* class and your *schema*
+
+- Import _Oak_, _Denostore_ class and your _schema_
 - Create a new instance of Denostore with your desired configuration
-- Add the route to handle GraphQL queries (/graphql by default)
+- Add the route to handle GraphQL queries ('/graphql' by default)
 
 Below is a simple example of configuring DenoStore for your server file, but there are several configuration options. Please refer to the [docs](http://denostore.io/docs) for more details
 
 ```ts
 // imports
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
-import { Denostore } from 'https://deno.land/x/denostore@<latestversion>/mod.ts'
+import { Denostore } from 'https://deno.land/x/denostore@<latestversion>/mod.ts';
 import { typeDefs, resolvers } from './yourSchema.ts';
 
 const PORT = 3000;
@@ -114,18 +121,19 @@ const denostore = new Denostore({
   redisPort: 6379,
 });
 
-// add route
+// add dedicated route
 app.use(denostore.routes(), denostore.allowedMethods());
 ```
+
 ### <a name="caching"></a> Caching
 
 **How do I set up caching?**
 
-After your Denostore instance is configured in your server, all GraphQL resolvers have access to that DenoStore instance and its methods through the context object. Your schemas do not require any DenoStore imports.
+After your Denostore instance is configured in your server, all GraphQL resolvers have access to that DenoStore instance and its methods through the resolver's Context object argument. Your schemas do not require any DenoStore imports.
 
 #### Cache Implementation Example
 
-Here is a simple example of a query resolver before and after adding the cache method from DenoStore. This is a query to pull information for a particular rocket from the SpaceX API.
+Here is a simple example of a query resolver before and after adding the cache method from DenoStore. This is a simple query to pull information for a particular rocket from the SpaceX API.
 
 **No DenoStore**
 
@@ -139,11 +147,14 @@ Query: {
     ) => {
         const results = await fetch(
           `https://api.spacexdata.com/v3/rockets/${args.id}`
-        ).then((res) => res.json());
+        )
+        .then(res => res.json())
+        .catch(err => console.log(err))
 
         return results;
     },
 ```
+
 **DenoStore Caching**
 
 ```ts
@@ -157,34 +168,39 @@ Query: {
       return await denostore.cache({ info }, async () => {
         const results = await fetch(
           `https://api.spacexdata.com/v3/rockets/${args.id}`
-        ).then((res) => res.json());
+        )
+        .then(res => res.json())
+        .catch(err => console.log(err))
 
         return results;
       });
     },
 ```
 
-As you can see it only takes a couple lines of code to add caching where you need it.
+As you can see, it only takes a few lines of code to add modular caching exactly how and where you need it.
 
 **Cache Method**
 
 ```ts
-denostore.cache({ info }, callback)
+denostore.cache({ info }, callback);
 ```
 
 `cache` is an asynchronous method that takes two arguments:
-- Cache arguments object where **info** is the only required property. Info must be passed as a property in this object as DenoStore parses the info AST for query information
-- Your data store call to execute if the results are not in the cache
+
+- An object where **info** is the only required property. The GraphQL resolver's info argument must be passed as a property in this object as DenoStore parses the info AST for query information
+- A callback function with your data store call to execute if the results are not in the cache
 
 ### <a name="expiration"></a> Expiration
-Expiration time for cached results can be set for each resolver and/or globally. 
+
+Expiration time for cached results can be set for each resolver and/or as a global default.
 
 #### Setting expiration in the cache method
 
-You can easily pass in cache expiration time in seconds as a value to the `ex` property to the cache arguments object:  
+You can easily pass in cache expiration time in seconds as a value to the `ex` property to the cache method's first argument object:
+
 ```ts
 // cached value will expire in 5 seconds
-denostore.cache({ info, ex: 5 }, callback)
+denostore.cache({ info, ex: 5 }, callback);
 ```
 
 #### Setting global expiration in DenoStore config
@@ -198,12 +214,13 @@ const denostore = new Denostore({
   usePlayground: true,
   schema: { typeDefs, resolvers },
   redisPort: 6379,
-  // default expiration set to 5 seconds
-  defaultEx: 5
+  // default expiration set globally to 5 seconds
+  defaultEx: 5,
 });
 ```
 
 When determining expiration for a cached value, DenoStore will always prioritize expiration time in the following order:
+
 1. `ex` property in resolver `cache` method
 2. `defaultEx` property in DenoStore configuration
 3. If no resolver or global expiration is set, cached values will **default to no expiration**. However, in the next section we discuss ways to clear the cache
@@ -227,7 +244,7 @@ Mutation: {
             success: false,
             message: 'failed to cancel trip',
           };
-			
+
         // clear/invalidate cache after successful mutation
         await denostore.clear();
 
@@ -240,15 +257,19 @@ Mutation: {
 You can also clear the Redis cache at any time using the redis command line interface.
 
 Clear keys from all databases on Redis instance
+
 ```sh
 redis-cli flushall
 ```
+
 Clear keys from all databases without blocking your server
 
 ```sh
 redis-cli flushall async
 ```
+
 Clear keys from currently selected database (if using same Redis client for other purposes aside from DenoStore)
+
 ```sh
 redis-cli flushdb
 ```
@@ -266,12 +287,13 @@ We welcome contributions to DenoStore as they are key to growing the Deno ecosys
 1. Fork and clone the repository
 2. Ensure [Deno](https://deno.land/manual/getting_started/installation) and [Redis](https://redis.io/docs/getting-started/) are installed on your machine
 3. Redis server must be [running](#installation) to use DenoStore
-4. Checkout feature/issue branch off of *main* branch
+4. Checkout feature/issue branch off of _main_ branch
 
 ### Running Testing
-1. Make sure Redis server is [running](#installation) on port *6379* when testing
+
+1. Make sure Redis server is [running](#installation) on port _6379_ when testing
 2. To run all tests run `deno test tests/ --allow-net`
-3. If tests pass you can submit a PR to the DenoStore *main* branch 
+3. If tests pass you can submit a PR to the DenoStore _main_ branch
 
 ## <a name="developers"></a> Developers
 
