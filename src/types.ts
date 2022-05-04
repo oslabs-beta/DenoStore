@@ -45,6 +45,9 @@ export type redisPortArg = number | undefined;
 
 export type userSchemaArg = GraphQLSchema | ExecutableSchemaArgs;
 
+/**
+ * backend call to your data store - results will be cached by cache
+ */
 export type cacheCallbackArg = { (): Promise<{}> | {} };
 
 export type optsVariable = SetOpts | undefined;
