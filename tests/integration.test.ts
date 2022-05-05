@@ -9,8 +9,8 @@ import { resolvers } from './schema/resolver.ts';
 
 /**
  test application invocation worked
- test denostore function returned instance of denostore imported class
- test optional arguments working properly in denostore function
+ test DenoStore function returned instance of DenoStore imported class
+ test optional arguments working properly in DenoStore function
  test routes working
  test speed reduction of repeated query (aka cache worked)
 
@@ -23,7 +23,7 @@ Deno.test('DenoStore started for standard setup', async (t) => {
     hostname: 'localhost',
     port: 6379,
   });
-  const DenoStoreCache = new DenoStore({
+  const ds = new DenoStore({
     route: '/graphql',
     usePlayground: false,
     schema: { typeDefs, resolvers },
@@ -31,7 +31,7 @@ Deno.test('DenoStore started for standard setup', async (t) => {
   });
 
   const app = new Application();
-  app.use(DenoStoreCache.routes(), DenoStoreCache.allowedMethods());
+  app.use(ds.routes(), ds.allowedMethods());
 
   let firstCallTime: number;
 
@@ -105,7 +105,7 @@ Deno.test('DenoStore started for standard setup', async (t) => {
 Deno.test({
   name: 'DenoStore started using redis port',
   fn: async (t) => {
-    const DenoStoreCache = new DenoStore({
+    const ds = new DenoStore({
       route: '/graphql',
       usePlayground: false,
       schema: { typeDefs, resolvers },
@@ -113,7 +113,7 @@ Deno.test({
     });
 
     const app = new Application();
-    app.use(DenoStoreCache.routes(), DenoStoreCache.allowedMethods());
+    app.use(ds.routes(), ds.allowedMethods());
 
     let firstCallTime: number;
 
@@ -176,7 +176,7 @@ Deno.test({
         );
       }
     );
-    await DenoStoreCache.clear();
+    await ds.clear();
   },
   sanitizeResources: false,
   sanitizeOps: false,
@@ -190,7 +190,7 @@ Deno.test('DenoStore started passing in schema', async (t) => {
 
   const schema = makeExecutableSchema({ typeDefs, resolvers });
 
-  const DenoStoreCache = new DenoStore({
+  const ds = new DenoStore({
     route: '/graphql',
     usePlayground: false,
     schema,
@@ -198,7 +198,7 @@ Deno.test('DenoStore started passing in schema', async (t) => {
   });
 
   const app = new Application();
-  app.use(DenoStoreCache.routes(), DenoStoreCache.allowedMethods());
+  app.use(ds.routes(), ds.allowedMethods());
 
   let firstCallTime: number;
 

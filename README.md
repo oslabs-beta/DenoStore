@@ -3,7 +3,7 @@
 DenoStore brings modular and low latency caching of GraphQL queries to a Deno/Oak server.
 
 [![Tests Passing](https://img.shields.io/badge/tests-passing-green)](https://github.com/oslabs-beta/DenoStore)
-[![deno version](https://img.shields.io/badge/deno.land/x-v1.0.0-lightgrey?logo=deno)](https://deno.land/x/denostore)
+[![Deno Version](https://img.shields.io/badge/deno.land/x-v1.0.0-lightgrey?logo=deno)](https://deno.land/x/denostore)
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/oslabs-beta/DenoStore/blob/main/LICENSE.md)
 [![Contributions](https://img.shields.io/badge/contributions-welcome-blue)]()
 
@@ -98,7 +98,7 @@ Implementing DenoStore takes only a few steps and since it is modular you can im
 To set up your server:
 
 - Import _Oak_, _Denostore_ class and your _schema_
-- Create a new instance of Denostore with your desired configuration
+- Create a new instance of DenoStore with your desired configuration
 - Add the route to handle GraphQL queries ('/graphql' by default)
 
 Below is a simple example of configuring DenoStore for your server file, but there are several configuration options. Please refer to the [docs](http://denostore.io/docs) for more details
@@ -113,8 +113,8 @@ const PORT = 3000;
 
 const app = new Application();
 
-// configure denostore
-const denostore = new DenoStore({
+// configure DenoStore instance
+const ds = new DenoStore({
   route: '/graphql',
   usePlayground: true,
   schema: { typeDefs, resolvers },
@@ -122,7 +122,7 @@ const denostore = new DenoStore({
 });
 
 // add dedicated route
-app.use(denostore.routes(), denostore.allowedMethods());
+app.use(ds.routes(), ds.allowedMethods());
 ```
 
 ### <a name="caching"></a> Caching
@@ -162,10 +162,10 @@ Query: {
     oneRocket: async (
       _parent: any,
       args: any,
-      { DenoStore }: any,
+      { ds }: any,
       info: any
     ) => {
-      return await DenoStore.cache({ info }, async () => {
+      return await ds.cache({ info }, async () => {
         const results = await fetch(
           `https://api.spacexdata.com/v3/rockets/${args.id}`
         )
@@ -182,7 +182,7 @@ As you can see, it only takes a few lines of code to add modular caching exactly
 **Cache Method**
 
 ```ts
-DenoStore.cache({ info }, callback);
+ds.cache({ info }, callback);
 ```
 
 `cache` is an asynchronous method that takes two arguments:
@@ -200,16 +200,16 @@ You can easily pass in cache expiration time in seconds as a value to the `ex` p
 
 ```ts
 // cached value will expire in 5 seconds
-DenoStore.cache({ info, ex: 5 }, callback);
+ds.cache({ info, ex: 5 }, callback);
 ```
 
 #### Setting global expiration in DenoStore config
 
-You can also add the `defaultEx` property with value expiration time in seconds when configuring the `denostore` instance on your server.
+You can also add the `defaultEx` property with value expiration time in seconds when configuring the `ds` instance on your server.
 
 ```ts
-// configure denostore
-const denostore = new DenoStore({
+// configure DenoStore instance
+const ds = new DenoStore({
   route: '/graphql',
   usePlayground: true,
   schema: { typeDefs, resolvers },
@@ -236,7 +236,7 @@ Mutation: {
     cancelTrip: async (
       _parent: any,
       args: launchId,
-      { DenoStore }: any
+      { ds }: any
     ) => {
       const result = await dataSources.userAPI.cancelTrip({ launchId });
         if (!result)
@@ -246,7 +246,7 @@ Mutation: {
           };
 
         // clear/invalidate cache after successful mutation
-        await DenoStore.clear();
+        await ds.clear();
 
         return result;
     },

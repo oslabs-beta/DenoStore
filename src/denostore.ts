@@ -165,7 +165,7 @@ export default class DenoStore {
           schema: this.#schema,
           source: query,
           // pass DenoStore instance through context to use methods in resolvers
-          contextValue: { DenoStore: this },
+          contextValue: { ds : this },
           variableValues: variables,
         });
 

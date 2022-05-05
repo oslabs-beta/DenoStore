@@ -1,7 +1,4 @@
-import {
-  assert,
-  assertEquals,
-} from 'https://deno.land/std@0.134.0/testing/asserts.ts';
+import { assertEquals } from 'https://deno.land/std@0.134.0/testing/asserts.ts';
 import { superoak } from 'https://deno.land/x/superoak@4.7.0/mod.ts';
 import { connect } from 'https://deno.land/x/redis@v0.25.2/mod.ts';
 import { Application } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
@@ -15,7 +12,7 @@ Deno.test('Expiration testing', async (t) => {
     hostname: 'localhost',
     port: 6379,
   });
-  const DenoStoreCache = new DenoStore({
+  const ds = new DenoStore({
     route: '/graphql',
     usePlayground: false,
     schema: { typeDefs, resolvers },
@@ -24,7 +21,7 @@ Deno.test('Expiration testing', async (t) => {
   });
 
   const app = new Application();
-  app.use(DenoStoreCache.routes(), DenoStoreCache.allowedMethods());
+  app.use(ds.routes(), ds.allowedMethods());
 
   await t.step('Accept query and respond with correct query', async () => {
     const testQuery =
