@@ -139,7 +139,7 @@ After your DenoStore instance is configured in your server, all GraphQL resolver
       // destructuring ds off context
       { ds }: any,
       info: any
-      }
+    )
 ```
 
 Alternatively, you can access ds from context without destructuring (e.g. `context.ds.cache`)
