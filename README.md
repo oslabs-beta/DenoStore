@@ -3,7 +3,7 @@
 DenoStore brings modular and low latency caching of GraphQL queries to a Deno/Oak server.
 
 [![Tests Passing](https://img.shields.io/badge/tests-passing-green)](https://github.com/oslabs-beta/DenoStore)
-[![Deno Version](https://img.shields.io/badge/deno.land/x-v1.0.0-lightgrey?logo=deno)](https://deno.land/x/denostore)
+[![Custom badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Flatest-version%2Fx%2Fdenostore%2Fmod.ts)](https://deno.land/x/denostore)
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/oslabs-beta/DenoStore/blob/main/LICENSE.md)
 [![Contributions](https://img.shields.io/badge/contributions-welcome-blue)]()
 
@@ -129,7 +129,21 @@ app.use(ds.routes(), ds.allowedMethods());
 
 **How do I set up caching?**
 
-After your DenoStore instance is configured in your server, all GraphQL resolvers have access to that DenoStore instance and its methods through the resolver's Context object argument. Your schemas do not require any DenoStore imports.
+After your DenoStore instance is configured in your server, all GraphQL resolvers have access to that DenoStore instance and its methods through the `ds` property in each resolver's `context` object argument. Your schemas do not require any DenoStore imports.
+
+**Accessing DenoStore methods using `ds` from `context`**
+```ts
+    oneRocket: async (
+      _parent: any,
+      args: any,
+      // destructuring ds off context
+      { ds }: any,
+      info: any
+    )
+```
+
+Alternatively, you can access ds from context without destructuring (e.g. `context.ds.cache`)
+
 
 #### Cache Implementation Example
 
