@@ -3,7 +3,7 @@
 DenoStore brings modular and low latency caching of GraphQL queries to a Deno/Oak server.
 
 [![Tests Passing](https://img.shields.io/badge/tests-passing-green)](https://github.com/oslabs-beta/DenoStore)
-[![Deno Version](https://img.shields.io/badge/deno.land/x-v1.0.0-lightgrey?logo=deno)](https://deno.land/x/denostore)
+[![Custom badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Flatest-version%2Fx%2Fdenostore%2Fmod.ts)](https://deno.land/x/denostore)
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/oslabs-beta/DenoStore/blob/main/LICENSE.md)
 [![Contributions](https://img.shields.io/badge/contributions-welcome-blue)]()
 
