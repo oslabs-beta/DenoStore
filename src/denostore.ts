@@ -8,7 +8,7 @@ import { buildCacheKey } from './utils.ts';
 import type {
   Redis,
   GraphQLSchema,
-  DenostoreArgs,
+  DenoStoreArgs,
   Middleware,
   Context,
   defaultExArg,
@@ -20,7 +20,7 @@ import type {
   optsVariable,
 } from './types.ts';
 
-export default class Denostore {
+export default class DenoStore {
   #usePlayground: boolean;
   #redisClient!: Redis;
   #schema!: GraphQLSchema;
@@ -28,7 +28,7 @@ export default class Denostore {
   #route: string;
   #defaultEx: defaultExArg;
 
-  constructor(args: DenostoreArgs) {
+  constructor(args: DenoStoreArgs) {
     const {
       schema,
       usePlayground = false,
@@ -84,7 +84,6 @@ export default class Denostore {
 
     // cache hit: return cached data
     if (cacheValue) {
-      console.log('Returning cached result');
       return JSON.parse(cacheValue);
     }
 
@@ -92,7 +91,7 @@ export default class Denostore {
     const results = await callback();
     if (results === null || results === undefined) {
       console.error(
-        '%cError: result of callback provided to Denostore cache function cannot be undefined or null',
+        '%cError: result of callback provided to DenoStore cache function cannot be undefined or null',
         'font-weight: bold; color: white; background-color: red;'
       );
       throw new Error('Error: Query error. See server console.');
@@ -165,8 +164,8 @@ export default class Denostore {
         const graphqlResults = await graphql({
           schema: this.#schema,
           source: query,
-          // pass denostore instance through context to use methods in resolvers
-          contextValue: { denostore: this },
+          // pass DenoStore instance through context to use methods in resolvers
+          contextValue: { ds : this },
           variableValues: variables,
         });
 

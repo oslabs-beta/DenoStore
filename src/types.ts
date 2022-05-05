@@ -15,7 +15,7 @@ import type {
 import type { IResolvers } from 'https://deno.land/x/graphql_tools@0.0.2/utils/interfaces.ts';
 
 /**
- ** Denostore Args
+ ** DenoStore Args
  ** Require either redis client instance or redis port and not both
  */
 interface BaseArgs {
@@ -35,7 +35,7 @@ interface RedisPortArgs extends BaseArgs {
   redisClient?: never;
 }
 
-export type DenostoreArgs = RedisClientArgs | RedisPortArgs;
+export type DenoStoreArgs = RedisClientArgs | RedisPortArgs;
 
 export type defaultExArg = number | undefined;
 
