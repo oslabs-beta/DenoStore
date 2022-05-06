@@ -81,7 +81,7 @@ import { DenoStore } from 'https://deno.land/x/denostore@<latestversion>/mod.ts'
 
 ### Oak
 
-Denostore uses the popular middleware framework Oak https://deno.land/x/oak to set up routes for handling GraphQL queries and optionally using the _GraphQL Playground IDE_. Like DenoStore, Oak will be installed directly from deno.land the first time you run your server unless you already have it cached.
+DenoStore uses the popular middleware framework Oak https://deno.land/x/oak to set up routes for handling GraphQL queries and optionally using the _GraphQL Playground IDE_. Like DenoStore, Oak will be installed directly from deno.land the first time you run your server unless you already have it cached.
 
 **Using v10.2.0 is highly recommended**
 
@@ -97,11 +97,11 @@ Implementing DenoStore takes only a few steps and since it is modular you can im
 
 To set up your server:
 
-- Import _Oak_, _Denostore_ class and your _schema_
+- Import _Oak_, _DenoStore_ class and your _schema_
 - Create a new instance of DenoStore with your desired configuration
 - Add the route to handle GraphQL queries ('/graphql' by default)
 
-Below is a simple example of configuring DenoStore for your server file, but there are several configuration options. Please refer to the [docs](http://denostore.io/docs) for more details
+Below is a simple example of configuring DenoStore for your server file, but there are several configuration options. Please refer to the [docs](http://denostore.io/docs) for more details.
 
 ```ts
 // imports
@@ -147,7 +147,7 @@ Alternatively, you can access ds from context without destructuring (e.g. `conte
 
 #### Cache Implementation Example
 
-Here is a simple example of a query resolver before and after adding the cache method from DenoStore. This is a simple query to pull information for a particular rocket from the SpaceX API.
+Here is an example of a query resolver before and after adding the cache method from DenoStore. This is a simple query to pull information for a particular rocket from the SpaceX API.
 
 **No DenoStore**
 
@@ -294,7 +294,7 @@ http://denostore.io/docs
 
 ## <a name="contributions"></a> Contributions
 
-We welcome contributions to DenoStore as they are key to growing the Deno ecosystem and community
+We welcome contributions to DenoStore as they are key to growing the Deno ecosystem and community.
 
 ### Start Contributing
 
