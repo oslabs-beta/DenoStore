@@ -9,8 +9,6 @@ DenoStore brings modular and low latency caching of GraphQL queries to a Deno/Oa
 
 **DenoStore Query Demo**
 
-http://denostore.io
-
 ![](img/DenoStoreDemo.gif)
 
 ## Table of Contents
@@ -287,10 +285,6 @@ Clear keys from currently selected database (if using same Redis client for othe
 ```sh
 redis-cli flushdb
 ```
-
-## <a name="documentation"></a> Further Documentation
-
-http://denostore.io/docs
 
 ## <a name="contributions"></a> Contributions
 
